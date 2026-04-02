@@ -29,6 +29,10 @@ a{color:inherit;text-decoration:none}
 
 /* ─── Week Selector ─────────────────────────────────────── */
 .week-bar{background:#f2ede3;padding:12px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #e0d8c4}
+.refresh-btn{background:none;border:1.5px solid #bfb090;border-radius:8px;padding:6px 10px;font-size:16px;cursor:pointer;transition:all .2s;color:#2d3d1e}
+.refresh-btn:hover{background:#e8e0cc;border-color:#c9a227}
+.refresh-btn.spinning{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .week-bar-label{font-size:13px;font-weight:700;color:#555;white-space:nowrap}
 .week-chip{background:#fff;border:1.5px solid #bfb090;color:#2d3d1e;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
 .week-chip:hover{background:#ede5cc;border-color:#c9a227}
@@ -275,6 +279,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
 <!-- WEEK SELECTOR                                             -->
 <!-- ═════════════════════════════════════════════════════════ -->
 <div class="week-bar" id="week-bar">
+  <button class="refresh-btn" onclick="refreshData()" title="רענן נתונים">🔄</button>
   <span class="week-bar-label">שבוע:</span>
   <div id="week-chips"></div>
 </div>
@@ -590,11 +595,9 @@ async function init(){
     document.getElementById('key-input').value = savedKey;
   }
 
-  // Render immediately with cached data
+  // Render immediately with cached data (only week chips, not content)
   if(cachedConfig && cachedConfig.units){
     buildWeekChips();
-    renderCurrentSection();
-    hideLoader();
   }
 
   // Fetch fresh data in parallel
@@ -633,6 +636,33 @@ function tryParseJSON(str){
 
 function showLoader(){ document.body.classList.add('is-loading'); }
 function hideLoader(){ document.body.classList.remove('is-loading'); }
+
+async function refreshData(){
+  const btn = document.querySelector('.refresh-btn');
+  btn.classList.add('spinning');
+  showLoader();
+  try{
+    const curWeek = getCurrentWeekLabel();
+    const nextWeek = getNextWeekLabel();
+    const [freshConfig, wRes] = await Promise.all([
+      apiGet({action:'config'}),
+      apiGet({action:'weeks'})
+    ]);
+    if(!freshConfig.error){
+      config = freshConfig;
+      localStorage.setItem(CACHE_KEY_CONFIG, JSON.stringify(config));
+    }
+    allWeeks = wRes.weeks || [];
+    localStorage.setItem(CACHE_KEY_WEEKS, JSON.stringify(allWeeks));
+    ensureWeeksExist(curWeek, nextWeek);
+    buildWeekChips();
+    await loadPlans();
+    showToast('✅ הנתונים עודכנו');
+  }finally{
+    hideLoader();
+    btn.classList.remove('spinning');
+  }
+}
 
 async function loadPlans(){
   if(!currentWeek) return;
