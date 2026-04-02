@@ -50,6 +50,9 @@ function doPost(e) {
       case 'submit':
         result = submitPlan(body);
         break;
+      case 'followup':
+        result = submitFollowup(body);
+        break;
       default:
         result = { error: 'Unknown action: ' + action };
     }
@@ -185,7 +188,10 @@ function getPlans(week) {
       rowType: String(data[i][3] || '').trim(),
       rowName: String(data[i][4] || '').trim(),
       content: String(data[i][5] || '').trim(),
-      timestamp: String(data[i][6] || '').trim()
+      timestamp: String(data[i][6] || '').trim(),
+      status: String(data[i][7] || '').trim(),
+      followupNote: String(data[i][8] || '').trim(),
+      followupTs: String(data[i][9] || '').trim()
     });
   }
 
@@ -234,15 +240,58 @@ function submitPlan(body) {
   const newRows = [];
   for (const row of rows) {
     if (row.content && row.content.trim()) {
-      newRows.push([week, unit, row.day, row.rowType, row.rowName, row.content.trim(), timestamp]);
+      newRows.push([week, unit, row.day, row.rowType, row.rowName, row.content.trim(), timestamp, '', '', '']);
     }
   }
 
   if (newRows.length > 0) {
-    ws.getRange(ws.getLastRow() + 1, 1, newRows.length, 7).setValues(newRows);
+    ws.getRange(ws.getLastRow() + 1, 1, newRows.length, 10).setValues(newRows);
   }
 
   return { success: true, unit, week, rowCount: newRows.length };
+}
+
+// ─── Submit Followup ───────────────────────────────────────
+function submitFollowup(body) {
+  const { key, week, data: items } = body;
+
+  const validation = validateKey(key);
+  if (!validation.valid) {
+    return { error: 'קוד יחידה לא תקין' };
+  }
+
+  const unit = validation.unit;
+  if (!week || !items || !Array.isArray(items)) {
+    return { error: 'Missing week or data' };
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ws = ss.getSheetByName(PLANS_SHEET);
+  if (!ws) return { error: 'Missing plans sheet' };
+
+  const allData = ws.getDataRange().getValues();
+  const followupTs = new Date().toISOString();
+  let updated = 0;
+
+  for (const item of items) {
+    // Find matching row: week + unit + day + rowType + rowName
+    for (let i = 1; i < allData.length; i++) {
+      if (String(allData[i][0]).trim() === week &&
+          String(allData[i][1]).trim() === unit &&
+          String(allData[i][2]).trim() === item.day &&
+          String(allData[i][3]).trim() === item.rowType &&
+          String(allData[i][4]).trim() === item.rowName) {
+        // Update columns H (8), I (9), J (10) — 1-indexed
+        ws.getRange(i + 1, 8).setValue(item.status || '');
+        ws.getRange(i + 1, 9).setValue(item.note || '');
+        ws.getRange(i + 1, 10).setValue(followupTs);
+        updated++;
+        break;
+      }
+    }
+  }
+
+  return { success: true, unit, week, updated };
 }
 
 // ─── Initial Setup Helper ──────────────────────────────────
@@ -280,7 +329,7 @@ function setupSheets() {
     plans = ss.insertSheet(PLANS_SHEET);
   }
   plans.clear();
-  plans.appendRow(['week', 'unit', 'day', 'row_type', 'row_name', 'content', 'timestamp']);
+  plans.appendRow(['week', 'unit', 'day', 'row_type', 'row_name', 'content', 'timestamp', 'status', 'followup_note', 'followup_ts']);
 
   SpreadsheetApp.flush();
   Logger.log('Setup complete!');
