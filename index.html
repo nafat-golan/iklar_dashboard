@@ -355,7 +355,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
 const GATE_CODE = 'iklar2026';
 const STORAGE_KEY_GATE = 'iklar_gate_ok';
 
-const GATE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+const GATE_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
 
 function checkGateCode(){
   const input = document.getElementById('gate-input').value.trim();
