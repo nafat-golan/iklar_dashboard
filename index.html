@@ -243,6 +243,33 @@ table.week tbody td:first-child{background:#f2ede3!important;padding:8px 10px;bo
 .manager-empty{font-size:12px;color:#ccc;font-style:italic}
 
 /* ─── Toast ─────────────────────────────────────────────── */
+/* ─── Manager Matrix ────────────────────────────────────── */
+.matrix-wrap{overflow-x:auto;margin-top:12px}
+table.matrix{width:100%;border-collapse:collapse;table-layout:fixed;min-width:800px}
+table.matrix thead th{background:#3a4f22;color:#c9a227;padding:9px 6px;font-size:11px;font-weight:700;text-align:center;border-left:1px solid #2d3d1e;line-height:1.4;position:sticky;top:0}
+table.matrix thead th:first-child{background:#2d3d1e;color:#fff;width:140px;text-align:right;padding-right:12px}
+table.matrix thead th .day-he{display:block;font-size:12px}
+table.matrix thead th .day-dt{display:block;font-size:10px;color:#9cba70}
+table.matrix tbody td{background:#fff;padding:6px;vertical-align:top;border:1px solid #e8e0d0;font-size:11px}
+table.matrix tbody tr:nth-child(even) td{background:#faf7f1}
+table.matrix tbody td:first-child{background:#f2ede3!important;padding:8px 10px;border-right:3px solid #c9a227;vertical-align:middle}
+.matrix-row-label{display:flex;align-items:center;gap:6px}
+.matrix-row-icon{font-size:16px;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.matrix-row-name{font-size:12px;font-weight:700;color:#2d3d1e}
+
+.matrix-unit-block{background:#f7f3ea;border:1px solid #e0d8c4;border-radius:6px;padding:5px 7px;margin-bottom:4px;position:relative}
+.matrix-unit-block:last-child{margin-bottom:0}
+.matrix-unit-name{font-size:10px;font-weight:700;color:#2d3d1e;margin-bottom:2px;display:flex;align-items:center;justify-content:space-between}
+.matrix-unit-pct{font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap}
+.matrix-unit-pct.pct-100{background:#e8f5e9;color:#2d8a2d}
+.matrix-unit-pct.pct-mid{background:#fff8e1;color:#b8860b}
+.matrix-unit-pct.pct-0{background:#fce4ec;color:#c0392b}
+.matrix-unit-pct.pct-na{background:#f0f0f0;color:#aaa}
+.matrix-unit-items{font-size:10px;color:#555;line-height:1.4}
+.matrix-unit-items .item-line{display:flex;align-items:baseline;gap:3px}
+.matrix-unit-items .item-dot{flex-shrink:0;font-size:8px}
+.matrix-empty{color:#ddd;font-size:11px;font-style:italic;text-align:center;padding:8px 0}
+
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2d3d1e;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1}
 
@@ -420,6 +447,12 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
 
   <!-- ── MANAGER SECTION ───────────────────────────────── -->
   <div id="manager-section" class="section active">
+    <div class="view-bar" style="margin-bottom:16px">
+      <div class="view-toggle">
+        <button class="view-pill active" onclick="setManagerView('list')">📋 רשימה</button>
+        <button class="view-pill" onclick="setManagerView('matrix')">📊 מטריצה</button>
+      </div>
+    </div>
     <div id="manager-content"></div>
   </div>
 </div>
@@ -504,6 +537,7 @@ let currentSection = 'manager-section';
 let currentUnitTab = '';
 let currentUnitView = 'efforts';
 let currentDayFilter = 'all';
+let managerView = 'list';
 let formUnit = '';
 let formKey = '';
 let followupUnit = '';
@@ -774,7 +808,10 @@ function switchSection(id){
 function renderCurrentSection(){
   switch(currentSection){
     case 'units-section': renderUnitsSection(); break;
-    case 'manager-section': renderManagerSection(); break;
+    case 'manager-section':
+      if(managerView==='matrix') renderManagerMatrix();
+      else renderManagerSection();
+      break;
   }
 }
 
@@ -1550,6 +1587,102 @@ function renderManagerSection(){
   });
 
   el.innerHTML = statusHTML + effortHTML + shiftsHTML;
+}
+
+function setManagerView(view){
+  managerView = view;
+  document.querySelectorAll('#manager-section .view-pill').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#manager-section .view-pill').forEach(p=>{
+    if((view==='list'&&p.textContent.includes('רשימה'))||
+       (view==='matrix'&&p.textContent.includes('מטריצה'))) p.classList.add('active');
+  });
+  renderManagerSection();
+}
+
+function renderManagerMatrix(){
+  const el = document.getElementById('manager-content');
+  const units = config.units || [];
+  const efforts = config.efforts || [];
+  const dates = getWeekDates(currentWeek);
+  const submittedUnits = new Set(currentPlans.map(p=>p.unit));
+
+  // Status bar (same as list view)
+  let statusHTML = '<h3 style="font-size:16px;color:#2d3d1e;margin-bottom:10px">סטטוס הגשה ומעקב — שבוע '+esc(currentWeek)+'</h3>';
+  statusHTML += '<div class="manager-status">';
+  units.forEach(u => {
+    const submitted = submittedUnits.has(u.name);
+    const unitItems = currentPlans.filter(p=>p.unit===u.name);
+    const doneCount = unitItems.filter(p=>p.status==='done').length;
+    const totalCount = unitItems.length;
+    const completionText = totalCount > 0 ? ` (${doneCount}/${totalCount})` : '';
+    statusHTML += `<span class="status-chip ${submitted?'submitted':'missing'}">${submitted?'✅':'⏳'} ${esc(u.name)}${completionText}</span>`;
+  });
+  statusHTML += '</div>';
+
+  // Build header
+  const thCols = DAYS.map((d,i) =>
+    `<th><span class="day-he">${esc(d)}</span><span class="day-dt">${esc(dates[i]||'')}</span></th>`
+  ).join('');
+
+  // Shift rows
+  const shiftRows = ['בוקר','ערב'].map(shift => {
+    const shiftIcon = shift==='בוקר'?'☀️':'🌙';
+    const label = `<td><div class="matrix-row-label"><div class="matrix-row-icon eicon-default">${shiftIcon}</div><span class="matrix-row-name">משמרת ${esc(shift)}</span></div></td>`;
+    const cells = DAYS.map(day => {
+      const dayPlans = currentPlans.filter(p=>p.day===day&&p.rowType==='shift'&&p.rowName===shift);
+      if(!dayPlans.length) return '<td><div class="matrix-empty">—</div></td>';
+      const blocks = dayPlans.map(p => buildMatrixBlock(p)).join('');
+      return `<td>${blocks}</td>`;
+    }).join('');
+    return `<tr>${label}${cells}</tr>`;
+  }).join('');
+
+  // Effort rows
+  const effortRows = efforts.map(eff => {
+    const icon = getEffortIcon(eff.name);
+    const label = `<td><div class="matrix-row-label"><div class="matrix-row-icon ${icon.bg}">${icon.emoji}</div><span class="matrix-row-name">${esc(eff.name)}</span></div></td>`;
+    const cells = DAYS.map(day => {
+      const dayPlans = currentPlans.filter(p=>p.day===day&&p.rowType==='effort'&&p.rowName===eff.name);
+      if(!dayPlans.length) return '<td><div class="matrix-empty">—</div></td>';
+      const blocks = dayPlans.map(p => buildMatrixBlock(p)).join('');
+      return `<td>${blocks}</td>`;
+    }).join('');
+    return `<tr>${label}${cells}</tr>`;
+  }).join('');
+
+  const tableHTML = `<div class="matrix-wrap">
+    <table class="matrix"><thead><tr><th>מאמץ / יום</th>${thCols}</tr></thead>
+    <tbody>${shiftRows}${effortRows}</tbody></table>
+  </div>`;
+
+  el.innerHTML = statusHTML + tableHTML;
+}
+
+function buildMatrixBlock(p){
+  // Determine completion badge
+  let pctClass, pctText;
+  if(p.status==='done'){ pctClass='pct-100'; pctText='🟢 בוצע'; }
+  else if(p.status==='partial'){ pctClass='pct-mid'; pctText='🟡 חלקי'; }
+  else if(p.status==='not-done'){ pctClass='pct-0'; pctText='🔴 לא בוצע'; }
+  else { pctClass='pct-na'; pctText='⏳'; }
+
+  // Content items
+  const lines = p.content.split(/\n/).filter(s=>s.trim());
+  const itemsHTML = lines.map(line => {
+    const dot = p.status==='done'?'🟢':p.status==='partial'?'🟡':p.status==='not-done'?'🔴':'▪';
+    return `<div class="item-line"><span class="item-dot">${dot}</span>${esc(line.trim())}</div>`;
+  }).join('');
+
+  const noteHTML = p.followupNote ? `<div style="font-size:9px;color:#999;margin-top:2px">📝 ${esc(p.followupNote)}</div>` : '';
+
+  return `<div class="matrix-unit-block">
+    <div class="matrix-unit-name">
+      <span>${esc(p.unit)}</span>
+      <span class="matrix-unit-pct ${pctClass}">${pctText}</span>
+    </div>
+    <div class="matrix-unit-items">${itemsHTML}</div>
+    ${noteHTML}
+  </div>`;
 }
 
 // ═══════════════════════════════════════════════════════════
