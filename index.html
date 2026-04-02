@@ -1145,7 +1145,7 @@ async function loadFollowupData(){
   showLoader();
   try{
     const res = await apiGet({action:'plans',week:weekLabel});
-    const plans = (res.plans||[]).filter(p=>p.unit===followupUnit);
+    const plans = (res.plans||[]).filter(p=>p.unit===followupUnit && p.rowType==='effort');
     buildFollowupUI(plans, weekLabel);
   }finally{ hideLoader(); }
 }
@@ -1515,7 +1515,7 @@ function renderManagerSection(){
   statusHTML += '<div class="manager-status">';
   units.forEach(u => {
     const submitted = submittedUnits.has(u.name);
-    const unitItems = currentPlans.filter(p=>p.unit===u.name);
+    const unitItems = currentPlans.filter(p=>p.unit===u.name && p.rowType==='effort');
     const doneCount = unitItems.filter(p=>p.status==='done').length;
     const totalCount = unitItems.length;
     const completionText = totalCount > 0 ? ` (${doneCount}/${totalCount})` : '';
@@ -1568,8 +1568,7 @@ function renderManagerSection(){
       if(!dayData.length) return;
 
       const unitsHTML = dayData.map(p =>{
-        const badge = p.status==='done'?'<span style="color:#2d8a2d;font-size:11px">🟢</span>':p.status==='partial'?'<span style="color:#b8860b;font-size:11px">🟡</span>':p.status==='not-done'?'<span style="color:#c0392b;font-size:11px">🔴</span>':'';
-        return `<div class="manager-unit-item">${badge}<span class="unit-name">${esc(p.unit)}</span>${esc(p.content).replace(/\n/g,', ')}</div>`;
+        return `<div class="manager-unit-item"><span class="unit-name">${esc(p.unit)}</span>${esc(p.content).replace(/\n/g,', ')}</div>`;
       }).join('');
 
       daysHTML += `<div class="manager-day-row">
@@ -1611,7 +1610,7 @@ function renderManagerMatrix(){
   statusHTML += '<div class="manager-status">';
   units.forEach(u => {
     const submitted = submittedUnits.has(u.name);
-    const unitItems = currentPlans.filter(p=>p.unit===u.name);
+    const unitItems = currentPlans.filter(p=>p.unit===u.name && p.rowType==='effort');
     const doneCount = unitItems.filter(p=>p.status==='done').length;
     const totalCount = unitItems.length;
     const completionText = totalCount > 0 ? ` (${doneCount}/${totalCount})` : '';
@@ -1624,14 +1623,14 @@ function renderManagerMatrix(){
     `<th><span class="day-he">${esc(d)}</span><span class="day-dt">${esc(dates[i]||'')}</span></th>`
   ).join('');
 
-  // Shift rows
+  // Shift rows (no followup badges)
   const shiftRows = ['בוקר','ערב'].map(shift => {
     const shiftIcon = shift==='בוקר'?'☀️':'🌙';
     const label = `<td><div class="matrix-row-label"><div class="matrix-row-icon eicon-default">${shiftIcon}</div><span class="matrix-row-name">משמרת ${esc(shift)}</span></div></td>`;
     const cells = DAYS.map(day => {
       const dayPlans = currentPlans.filter(p=>p.day===day&&p.rowType==='shift'&&p.rowName===shift);
       if(!dayPlans.length) return '<td><div class="matrix-empty">—</div></td>';
-      const blocks = dayPlans.map(p => buildMatrixBlock(p)).join('');
+      const blocks = dayPlans.map(p => buildMatrixBlockPlain(p)).join('');
       return `<td>${blocks}</td>`;
     }).join('');
     return `<tr>${label}${cells}</tr>`;
@@ -1682,6 +1681,17 @@ function buildMatrixBlock(p){
     </div>
     <div class="matrix-unit-items">${itemsHTML}</div>
     ${noteHTML}
+  </div>`;
+}
+
+function buildMatrixBlockPlain(p){
+  const lines = p.content.split(/\n/).filter(s=>s.trim());
+  const itemsHTML = lines.map(line =>
+    `<div class="item-line"><span class="item-dot">▪</span>${esc(line.trim())}</div>`
+  ).join('');
+  return `<div class="matrix-unit-block">
+    <div class="matrix-unit-name"><span>${esc(p.unit)}</span></div>
+    <div class="matrix-unit-items">${itemsHTML}</div>
   </div>`;
 }
 
