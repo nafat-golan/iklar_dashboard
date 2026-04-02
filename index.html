@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<title>דשבורד תוכניות עבודה יקל"ר</title>
+<style>
+/* ─── Reset & Base ──────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f2ede3;color:#1a1a1a;min-height:100vh;direction:rtl}
+button,input,textarea,select{font-family:inherit;font-size:inherit}
+a{color:inherit;text-decoration:none}
+
+/* ─── Header ────────────────────────────────────────────── */
+.header{background:#2d3d1e;color:#fff;padding:12px 28px;display:flex;align-items:center;justify-content:space-between}
+.header-right{display:flex;align-items:center;gap:14px}
+.avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.header-title{font-size:17px;font-weight:700}
+.header-sub{font-size:12px;color:#9cba70;margin-top:2px}
+.date-badge{background:#c9a227;color:#fff;padding:6px 16px;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap}
+
+/* ─── Main Nav ──────────────────────────────────────────── */
+.main-nav{background:#3a4f22;padding:0 28px;display:flex;align-items:stretch;gap:0}
+.nav-btn{background:none;border:none;color:#9cba70;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;border-bottom:3px solid transparent;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.nav-btn:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-btn.active{color:#c9a227;border-bottom-color:#c9a227;background:rgba(255,255,255,.05)}
+
+/* ─── Week Selector ─────────────────────────────────────── */
+.week-bar{background:#f2ede3;padding:12px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #e0d8c4}
+.week-bar-label{font-size:13px;font-weight:700;color:#555;white-space:nowrap}
+.week-chip{background:#fff;border:1.5px solid #bfb090;color:#2d3d1e;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.week-chip:hover{background:#ede5cc;border-color:#c9a227}
+.week-chip.active{background:#2d3d1e;color:#fff;border-color:#2d3d1e}
+.week-chip .count{font-size:10px;opacity:.7}
+
+/* ─── Content Area ──────────────────────────────────────── */
+.content{padding:20px 28px 60px}
+.section{display:none}
+.section.active{display:block}
+
+/* ─── Form Section ──────────────────────────────────────── */
+.form-login{max-width:400px;margin:40px auto;text-align:center}
+.form-login h2{font-size:22px;color:#2d3d1e;margin-bottom:8px}
+.form-login p{font-size:14px;color:#888;margin-bottom:20px}
+.key-input-wrap{display:flex;gap:8px;justify-content:center}
+.key-input{padding:10px 16px;border:2px solid #bfb090;border-radius:8px;font-size:16px;text-align:center;width:200px;direction:ltr}
+.key-input:focus{outline:none;border-color:#c9a227}
+.btn{padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;border:none;cursor:pointer;transition:all .15s}
+.btn-primary{background:#c9a227;color:#fff}
+.btn-primary:hover{background:#a8841e}
+.btn-success{background:#2d3d1e;color:#fff}
+.btn-success:hover{background:#1a2a12}
+.btn-outline{background:#fff;color:#2d3d1e;border:1.5px solid #bfb090}
+.btn-outline:hover{background:#ede5cc}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.form-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.form-header h2{font-size:20px;color:#2d3d1e}
+.form-unit-badge{background:#2d3d1e;color:#c9a227;padding:6px 16px;border-radius:8px;font-size:14px;font-weight:700}
+.form-week-select{padding:8px 14px;border:2px solid #bfb090;border-radius:8px;font-size:14px;background:#fff;cursor:pointer}
+.form-week-select:focus{outline:none;border-color:#c9a227}
+
+/* Day Accordion */
+.day-section{background:#fff;border-radius:10px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);overflow:hidden;border:1.5px solid #e8e0cc}
+.day-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .15s}
+.day-header:hover{background:#faf7f0}
+.day-header.open{background:#f7f3ea;border-bottom:1px solid #e8e0cc}
+.day-header .day-title{font-size:15px;font-weight:700;color:#2d3d1e;display:flex;align-items:center;gap:8px}
+.day-header .day-title .day-date{font-size:12px;color:#999;font-weight:400}
+.day-header .chevron{font-size:12px;color:#999;transition:transform .2s}
+.day-header.open .chevron{transform:rotate(180deg)}
+.day-header .filled-count{font-size:11px;color:#7daa50;font-weight:600}
+.day-body{padding:16px 18px;display:none}
+.day-header.open+.day-body{display:block}
+
+.field-group{margin-bottom:16px}
+.field-group:last-child{margin-bottom:0}
+.field-label{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.field-label .icon{font-size:16px}
+.field-label .name{font-size:13px;font-weight:700;color:#2d3d1e}
+.field-hint{font-size:11px;color:#aaa;margin-bottom:6px;line-height:1.4}
+.field-textarea{width:100%;min-height:60px;padding:8px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;line-height:1.6;resize:vertical;direction:rtl}
+.field-textarea:focus{outline:none;border-color:#c9a227}
+.field-textarea::placeholder{color:#ccc}
+
+.effort-days-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}
+.effort-day-cell{background:#faf8f3;border:1px solid #e8e0cc;border-radius:8px;padding:10px 12px}
+.effort-day-label{font-size:13px;font-weight:700;color:#2d3d1e;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.effort-day-label .day-date{font-size:11px;color:#999;font-weight:400}
+
+.shift-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0}
+.shift-field .shift-label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;margin-bottom:4px}
+.shift-field .shift-label.boker{color:#b8860b}
+.shift-field .shift-label.erev{color:#3949ab}
+
+.form-actions{text-align:center;padding:20px 0}
+.form-actions .btn{font-size:16px;padding:12px 40px}
+.submit-status{margin-top:10px;font-size:13px}
+.submit-status.success{color:#2d8a2d}
+.submit-status.error{color:#c0392b}
+
+/* ─── Unit Tabs ─────────────────────────────────────────── */
+.unit-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.unit-tab{background:#fff;border:1.5px solid #bfb090;color:#2d3d1e;padding:7px 17px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .17s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.unit-tab:hover{background:#ede5cc}
+.unit-tab.active{background:#2d3d1e;color:#fff;border-color:#2d3d1e}
+.unit-tab .dot{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
+.unit-tab.has-data .dot{background:#7ccc80}
+.unit-tab.active .dot{background:#c9a227}
+
+/* View Toggle */
+.view-bar{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.view-toggle{display:flex;background:#e8e0cc;border-radius:20px;padding:3px;gap:2px}
+.view-pill{padding:5px 14px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;color:#555;transition:all .15s;white-space:nowrap;border:none;background:none}
+.view-pill.active{background:#2d3d1e;color:#fff}
+.day-filter-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.day-filter-label{font-size:12px;font-weight:700;color:#555;white-space:nowrap}
+.day-btn{background:#fff;border:1.5px solid #ccc;color:#333;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.day-btn:hover{background:#ede5cc;border-color:#c9a227}
+.day-btn.active{background:#2d3d1e;color:#fff;border-color:#2d3d1e}
+
+/* ─── Cards ─────────────────────────────────────────────── */
+.card{border-radius:10px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card-header{background:#2d3d1e;padding:11px 20px;display:flex;align-items:center;gap:10px}
+.card-header .icon{font-size:17px}
+.card-header .title{color:#c9a227;font-size:14px;font-weight:700}
+.card-body{background:#fff}
+
+/* Efforts Grid */
+.efforts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;padding:16px 18px}
+.effort-card{background:#f7f3ea;border-radius:10px;border:1.5px solid #e0d8c4;overflow:hidden;transition:box-shadow .15s}
+.effort-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.1)}
+.effort-card-top{display:flex;align-items:center;gap:11px;padding:12px 14px 10px;border-bottom:1px solid #e8e0cc}
+.effort-icon-wrap{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.effort-name{font-size:13px;font-weight:700;color:#2d3d1e;line-height:1.3}
+.effort-card-body{padding:8px 14px 10px}
+.eicon-chossen{background:#e8f5e9}.eicon-hasbara{background:#fff3e0}
+.eicon-shotef{background:#e3f2fd}.eicon-zman{background:#fce4ec}
+.eicon-kesher{background:#ede7f6}.eicon-tiaum{background:#e0f7fa}
+.eicon-default{background:#f0f0f0}
+
+/* Shifts Grid */
+.shifts-week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0}
+.shift-day-col{border-left:1px solid #e8e0d0}
+.shift-day-col:last-child{border-left:none}
+.shift-day-header{background:#3a4f22;color:#c9a227;text-align:center;padding:7px 4px;font-size:11px;font-weight:700;line-height:1.4}
+.shift-day-header .sh-date{display:block;font-size:10px;color:#9cba70;margin-top:1px}
+.shift-day-header.weekend{background:#4a5a30}
+.shift-block{padding:8px;border-bottom:1px solid #f0e8d0}
+.shift-block:last-child{border-bottom:none}
+.shift-label-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;display:inline-block;margin-bottom:5px}
+.shift-label-tag.boker{background:#fff8e1;color:#b8860b;border:1px solid #f0d060}
+.shift-label-tag.erev{background:#e8eaf6;color:#3949ab;border:1px solid #c5cae9}
+.shift-content{font-size:11px;color:#333;line-height:1.5}
+.shift-empty{font-size:11px;color:#ccc;font-style:italic}
+
+/* Weekly Table */
+.table-wrap{overflow-x:auto}
+table.week{width:100%;border-collapse:collapse;table-layout:fixed;direction:rtl;min-width:700px}
+table.week thead th{background:#3a4f22;color:#c9a227;padding:9px 8px;font-size:12px;font-weight:700;text-align:center;border-left:1px solid #2d3d1e;line-height:1.4}
+table.week thead th:first-child{background:#2d3d1e;color:#fff;width:175px}
+table.week thead th .day-he{display:block;font-size:12px}
+table.week thead th .day-dt{display:block;font-size:11px;color:#9cba70}
+table.week tbody td{background:#fff;padding:10px 9px;vertical-align:top;border:1px solid #e8e0d0;font-size:12px;color:#333;line-height:1.55}
+table.week tbody tr:nth-child(even) td{background:#faf7f1}
+table.week tbody td:first-child{background:#f2ede3!important;padding:8px 10px;border-right:3px solid #c9a227;vertical-align:middle}
+.row-label{display:flex;align-items:center;gap:8px}
+.row-icon{font-size:18px;flex-shrink:0;width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center}
+.row-text{display:flex;flex-direction:column}
+.row-effort-name{font-size:12px;font-weight:700;color:#2d3d1e}
+.row-effort-desc{font-size:10px;color:#999;line-height:1.35;margin-top:1px}
+.weekend-col{background:#f5f0e5!important}
+
+.bullet-list{list-style:none;padding:0;margin:0}
+.bullet-list li{padding:3px 0;border-bottom:1px solid #f0e8d8;font-size:12px;color:#333;line-height:1.5}
+.bullet-list li:last-child{border-bottom:none}
+.bullet-list li::before{content:"• ";color:#c9a227;font-weight:700}
+.no-data{color:#aaa;font-size:14px;font-style:italic;padding:20px;text-align:center}
+
+/* ─── Manager Dashboard ─────────────────────────────────── */
+.manager-status{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.status-chip{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px}
+.status-chip.submitted{background:#e8f5e9;color:#2d8a2d;border:1px solid #c8e6c9}
+.status-chip.missing{background:#fff3e0;color:#e65100;border:1px solid #ffe0b2}
+
+.manager-effort-section{margin-bottom:20px}
+.manager-effort-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#2d3d1e;border-radius:10px 10px 0 0;color:#c9a227;font-size:15px;font-weight:700}
+.manager-effort-header .m-icon{font-size:20px}
+.manager-effort-body{background:#fff;border:1.5px solid #e0d8c4;border-top:none;border-radius:0 0 10px 10px;padding:0}
+.manager-day-row{padding:10px 16px;border-bottom:1px solid #f0e8d8;display:flex;align-items:flex-start;gap:12px}
+.manager-day-row:last-child{border-bottom:none}
+.manager-day-name{font-size:12px;font-weight:700;color:#2d3d1e;min-width:60px;flex-shrink:0;padding-top:2px}
+.manager-day-units{flex:1;display:flex;flex-direction:column;gap:4px}
+.manager-unit-item{font-size:12px;color:#333;line-height:1.5}
+.manager-unit-item .unit-name{font-weight:700;color:#2d3d1e;background:#f7f3ea;padding:1px 6px;border-radius:4px;margin-left:6px;display:inline-block}
+.manager-empty{font-size:12px;color:#ccc;font-style:italic}
+
+/* ─── Toast ─────────────────────────────────────────────── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2d3d1e;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* ─── Access Gate ───────────────────────────────────────── */
+.access-gate{position:fixed;top:0;left:0;right:0;bottom:0;background:#2d3d1e;z-index:9999;display:flex;align-items:center;justify-content:center}
+.access-gate.hidden{display:none}
+.gate-box{background:#fff;border-radius:14px;padding:40px;text-align:center;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.gate-box h2{font-size:20px;color:#2d3d1e;margin-bottom:6px}
+.gate-box p{font-size:13px;color:#888;margin-bottom:20px}
+.gate-input{padding:10px 16px;border:2px solid #bfb090;border-radius:8px;font-size:16px;text-align:center;width:180px;direction:ltr}
+.gate-input:focus{outline:none;border-color:#c9a227}
+.gate-error{color:#c0392b;font-size:13px;margin-top:10px}
+
+/* ─── Loading ───────────────────────────────────────────── */
+#top-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:9999;background:transparent;pointer-events:none}
+#top-bar::after{content:'';display:none;position:absolute;top:0;left:0;height:100%;width:30%;background:linear-gradient(90deg,#c9a227,#e8d57e,#c9a227);border-radius:0 2px 2px 0;animation:topbar 1.2s ease-in-out infinite}
+body.is-loading #top-bar::after{display:block}
+body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s}
+.content{transition:opacity .15s}
+@keyframes topbar{0%{left:-30%;width:30%}50%{left:40%;width:40%}100%{left:100%;width:30%}}
+
+/* ─── Responsive ────────────────────────────────────────── */
+@media(max-width:640px){
+  .header,.main-nav,.week-bar,.content{padding-right:12px;padding-left:12px}
+  .nav-btn{padding:10px 14px;font-size:13px}
+  .efforts-grid{grid-template-columns:1fr}
+  .shifts-week-grid{grid-template-columns:repeat(3,1fr)}
+  .shift-fields{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body class="is-loading">
+<div id="top-bar"></div>
+
+<!-- ═════════════════════════════════════════════════════════ -->
+<!-- HEADER                                                    -->
+<!-- ═════════════════════════════════════════════════════════ -->
+<!-- ═════════════════════════════════════════════════════════ -->
+<!-- ACCESS GATE                                               -->
+<!-- ═════════════════════════════════════════════════════════ -->
+<div class="access-gate" id="access-gate">
+  <div class="gate-box">
+    <div style="font-size:40px;margin-bottom:12px">🔒</div>
+    <h2>דשבורד יקל"ר</h2>
+    <p>הזן קוד גישה כדי להיכנס</p>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-primary" onclick="checkGateCode()">כניסה</button>
+      <input type="password" id="gate-input" class="gate-input" placeholder="קוד גישה" autocomplete="off">
+    </div>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="date-badge" id="date-badge">–</div>
+  <div class="header-right">
+    <div>
+      <div class="header-title">דשבורד תוכניות עבודה יקל"ר</div>
+      <div class="header-sub">נפת גולן | מרחב אזרחי</div>
+    </div>
+    <img class="avatar" src="logo_nafa.png" alt="לוגו נפת גולן">
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════ -->
+<!-- MAIN NAVIGATION                                           -->
+<!-- ═════════════════════════════════════════════════════════ -->
+<div class="main-nav">
+  <button class="nav-btn" data-section="form-section" onclick="switchSection('form-section')">📝 הגשת תוכנית</button>
+  <button class="nav-btn" data-section="units-section" onclick="switchSection('units-section')">👁️ תצוגת יחידות</button>
+  <button class="nav-btn active" data-section="manager-section" onclick="switchSection('manager-section')">📊 תצוגת מנהל</button>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════ -->
+<!-- WEEK SELECTOR                                             -->
+<!-- ═════════════════════════════════════════════════════════ -->
+<div class="week-bar" id="week-bar">
+  <span class="week-bar-label">שבוע:</span>
+  <div id="week-chips"></div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════ -->
+<!-- CONTENT                                                   -->
+<!-- ═════════════════════════════════════════════════════════ -->
+<div class="content">
+
+  <!-- ── FORM SECTION ──────────────────────────────────── -->
+  <div id="form-section" class="section">
+    <!-- Login step -->
+    <div id="form-login" class="form-login">
+      <h2>📝 הגשת תוכנית שבועית</h2>
+      <p>הזן את קוד היחידה שלך כדי להתחיל</p>
+      <div class="key-input-wrap">
+        <button class="btn btn-primary" onclick="validateUnitKey()">כניסה</button>
+        <input type="text" id="key-input" class="key-input" placeholder="קוד יחידה" autocomplete="off">
+      </div>
+      <div id="key-error" style="color:#c0392b;font-size:13px;margin-top:10px"></div>
+    </div>
+
+    <!-- Form step -->
+    <div id="form-main" style="display:none">
+      <div class="form-header">
+        <div>
+          <h2>📝 תוכנית שבועית</h2>
+          <span class="form-unit-badge" id="form-unit-name"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <select class="form-week-select" id="form-week-select" onchange="onFormWeekChange()"></select>
+          <button class="btn btn-outline" onclick="logoutForm()">החלף יחידה</button>
+        </div>
+      </div>
+
+      <div id="form-days"></div>
+
+      <div class="form-actions">
+        <button class="btn btn-success" onclick="submitForm()" id="submit-btn">💾 שלח תוכנית</button>
+        <div class="submit-status" id="submit-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── UNITS SECTION ─────────────────────────────────── -->
+  <div id="units-section" class="section">
+    <div class="unit-tabs" id="unit-tabs"></div>
+    <div class="view-bar">
+      <div class="view-toggle">
+        <button class="view-pill active" onclick="setUnitView('efforts')">🎯 מאמצים</button>
+        <button class="view-pill" onclick="setUnitView('shifts')">🕐 משמרות</button>
+        <button class="view-pill" onclick="setUnitView('table')">📅 טבלה שבועית</button>
+      </div>
+      <div class="day-filter-bar" id="day-filter-bar" style="display:none">
+        <span class="day-filter-label">יום:</span>
+      </div>
+    </div>
+    <div id="unit-content"></div>
+  </div>
+
+  <!-- ── MANAGER SECTION ───────────────────────────────── -->
+  <div id="manager-section" class="section active">
+    <div id="manager-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT                                                -->
+<!-- ═════════════════════════════════════════════════════════ -->
+<script>
+// ┌──────────────────────────────────────────────────────────┐
+// │ CONFIGURATION                                             │
+// │ Replace this URL with your deployed Apps Script web app   │
+// └──────────────────────────────────────────────────────────┘
+// ─── Access Gate ───────────────────────────────────────────
+const GATE_CODE = 'iklar2026';
+const STORAGE_KEY_GATE = 'iklar_gate_ok';
+
+const GATE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+
+function checkGateCode(){
+  const input = document.getElementById('gate-input').value.trim();
+  if(input === GATE_CODE){
+    localStorage.setItem(STORAGE_KEY_GATE, String(Date.now()));
+    document.getElementById('access-gate').classList.add('hidden');
+    init();
+  } else {
+    document.getElementById('gate-error').textContent = 'קוד גישה שגוי';
+  }
+}
+document.getElementById('gate-input').addEventListener('keydown', function(e){
+  if(e.key==='Enter') checkGateCode();
+});
+
+// Auto-unlock if previously authenticated and not expired
+function isGateValid(){
+  const ts = parseInt(localStorage.getItem(STORAGE_KEY_GATE));
+  if(!ts) return false;
+  if(Date.now() - ts > GATE_EXPIRY_MS){
+    localStorage.removeItem(STORAGE_KEY_GATE);
+    return false;
+  }
+  return true;
+}
+if(isGateValid()){
+  document.getElementById('access-gate').classList.add('hidden');
+}
+
+// ─── Configuration ─────────────────────────────────────────
+const _a='AKfycbwlNuUWauzNuiqeDEgVQ0HGX';
+const _b='WnfKlXhAGFJ5JJDAjvZDZNS-i1PEqhzpWIfPevCg0B0';
+const API_URL = 'https://script.google.com/macros/s/'+_a+_b+'/exec';
+
+// ─── Demo mode: set to true to use built-in sample data ────
+const DEMO_MODE = !API_URL || API_URL.includes('YOUR_APPS_SCRIPT');
+
+// ─── Constants ─────────────────────────────────────────────
+const DAYS = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const DAYS_SHORT = ['א','ב','ג','ד','ה','ו','ש'];
+const STORAGE_KEY_UNIT = 'iklar_unit_key';
+
+const EFFORT_ICONS = [
+  {keywords:['חוסן'],emoji:'🛡️',bg:'eicon-chossen'},
+  {keywords:['הסברה'],emoji:'📣',bg:'eicon-hasbara'},
+  {keywords:['שוטף'],emoji:'⚙️',bg:'eicon-shotef'},
+  {keywords:['זמן יקר','אימון'],emoji:'🎯',bg:'eicon-zman'},
+  {keywords:['קשר','רשות'],emoji:'🤝',bg:'eicon-kesher'},
+  {keywords:['תיאום','נפה'],emoji:'📞',bg:'eicon-tiaum'},
+];
+function getEffortIcon(name){
+  for(const e of EFFORT_ICONS)
+    if(e.keywords.some(k=>name.includes(k))) return e;
+  return {emoji:'📌',bg:'eicon-default'};
+}
+
+// ─── State ─────────────────────────────────────────────────
+let config = {units:[],efforts:[]};
+let allWeeks = [];
+let currentWeek = '';
+let currentPlans = [];
+let currentSection = 'manager-section';
+let currentUnitTab = '';
+let currentUnitView = 'efforts';
+let currentDayFilter = 'all';
+let formUnit = '';
+let formKey = '';
+
+// ─── Demo Data ─────────────────────────────────────────────
+function getDemoConfig(){
+  return {
+    units:[
+      {name:'עין קיניא'},{name:"מג'דל שמס"},{name:'בוקעתא'},
+      {name:'מסעדה'},{name:'גולן'},{name:'קצרין'},
+      {name:'מגדל'},{name:'טבריה'},{name:'עמק הירדן'}
+    ],
+    efforts:[
+      {name:'חוסן',desc:'הרצאות מקצועיות לצוותים, סיוע אזרחי, ביקור קשישים, הכשרות ורענון לצוותים, פעילות מתנדבים ברשות',icon:'🛡️'},
+      {name:'הסברה',desc:"מלשחיות, שליחת קיט הסברה לחנ\"מ, לשבת, לנסיעה ברכב וכו', סרטון ראש רשות/רב/שייח, עריכת הודעות נצורות, הסברה יעודית לאוכ' מוחלשות, הדברה דלת לדלת: D2D",icon:'📣'},
+      {name:'שוטף',desc:'צופרים, פעילות מס"ר, עדכון תיק מודיעין אוכלוסיה, הע"מ נפתי/ימי העמקה בנפה',icon:'⚙️'},
+      {name:'זמן יקר יקל"ר',desc:'אימון פנים יקל"ר',icon:'🎯'},
+      {name:'קשר עם הרשות',desc:'סיור רשות, הע"מ רשות, הדרכות מכלולים, סע"ר',icon:'🤝'},
+      {name:'תיאום בעלי תפקידים מהנפה',desc:'נמרוד, מירב, מיגון, קה"א נפה, חפ"ק אלפ"א, מפקד נפה, קנ"ר',icon:'📞'}
+    ]
+  };
+}
+
+function getDemoWeeks(){
+  const w = getCurrentWeekLabel();
+  return {weeks:[{label:w,unitCount:3}]};
+}
+
+function getDemoPlans(week){
+  const plans = [];
+  const units = ['בוקעתא','מסעדה','מגדל'];
+  const efforts = ['חוסן','הסברה','שוטף'];
+  const sampleContent = [
+    'סיור במתחמי הקניות ובדיקת רצף תפקודי\nביצוע שאלוני חוסן - תשאול לתושבים',
+    'הנגשת מידע לקשישים מגיל 60+ עד הבית\nמפגש זום עם צוות החינוכי',
+    'משימות ברזל יומיות\nנוכחות בהעמ"צ רשותית'
+  ];
+  units.forEach((unit,ui) => {
+    DAYS.slice(0,6).forEach((day,di) => {
+      if(di % 2 === 0 || ui === 0){
+        plans.push({week,unit,day,rowType:'shift',rowName:'בוקר',content:'צוות א',timestamp:''});
+        plans.push({week,unit,day,rowType:'shift',rowName:'ערב',content:'צוות ב',timestamp:''});
+      }
+      efforts.forEach((eff,ei) => {
+        if((di+ei+ui)%3 !== 2){
+          plans.push({week,unit,day,rowType:'effort',rowName:eff,content:sampleContent[ei],timestamp:''});
+        }
+      });
+    });
+  });
+  return {plans};
+}
+
+function demoValidateKey(key){
+  const map = {
+    'ein1':'עין קיניא','majdal2':"מג'דל שמס",'bokta3':'בוקעתא',
+    'masada4':'מסעדה','golan5':'גולן','katzrin6':'קצרין',
+    'migdal7':'מגדל','tveria8':'טבריה','emek9':'עמק הירדן'
+  };
+  return map[key] ? {valid:true,unit:map[key]} : {valid:false};
+}
+
+// ─── API Helpers ───────────────────────────────────────────
+async function apiGet(params){
+  if(DEMO_MODE){
+    switch(params.action){
+      case 'config': return getDemoConfig();
+      case 'weeks': return getDemoWeeks();
+      case 'plans': return getDemoPlans(params.week||currentWeek);
+      case 'validate': return demoValidateKey(params.key);
+    }
+    return {};
+  }
+  const qs = new URLSearchParams(params).toString();
+  try{
+    const res = await fetch(API_URL + '?' + qs);
+    return res.json();
+  }catch(e){ console.error('apiGet error:',e); return {}; }
+}
+
+async function apiPost(body){
+  if(DEMO_MODE){
+    // Simulate success
+    return {success:true,unit:formUnit,week:body.week,rowCount:10};
+  }
+  try{
+    const res = await fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify(body)
+    });
+    return res.json();
+  }catch(e){ console.error('apiPost error:',e); return {error:e.message}; }
+}
+
+// ─── Week Helpers ──────────────────────────────────────────
+function getCurrentWeekLabel(){
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0=Sun
+  const sun = new Date(now);
+  sun.setDate(now.getDate() - dayOfWeek);
+  const sat = new Date(sun);
+  sat.setDate(sun.getDate() + 6);
+  return formatDateDM(sun) + '-' + formatDateDM(sat);
+}
+
+function getNextWeekLabel(){
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const sun = new Date(now);
+  sun.setDate(now.getDate() - dayOfWeek + 7);
+  const sat = new Date(sun);
+  sat.setDate(sun.getDate() + 6);
+  return formatDateDM(sun) + '-' + formatDateDM(sat);
+}
+
+function formatDateDM(d){
+  return d.getDate() + '.' + (d.getMonth()+1);
+}
+
+function getWeekDates(weekLabel){
+  // "22.3-28.3" → array of 7 date strings
+  const parts = weekLabel.split('-');
+  if(parts.length < 2) return DAYS.map((_,i)=>i+'');
+  const first = parts[0].trim().split('.');
+  const day = parseInt(first[0])||1;
+  const month = parseInt(first[1])||1;
+  const year = new Date().getFullYear();
+  const sun = new Date(year, month-1, day);
+  const dates = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(sun);
+    d.setDate(sun.getDate()+i);
+    dates.push(d.getDate()+'.'+(d.getMonth()+1));
+  }
+  return dates;
+}
+
+// ─── Initialization ────────────────────────────────────────
+const CACHE_KEY_CONFIG = 'iklar_cache_config';
+const CACHE_KEY_WEEKS  = 'iklar_cache_weeks';
+
+async function init(){
+  try{
+  updateDateBadge();
+
+  // Show cached data instantly while fetching fresh data
+  const cachedConfig = tryParseJSON(localStorage.getItem(CACHE_KEY_CONFIG));
+  const cachedWeeks  = tryParseJSON(localStorage.getItem(CACHE_KEY_WEEKS));
+
+  if(cachedConfig && cachedConfig.units){
+    config = cachedConfig;
+  }
+  if(cachedWeeks){
+    allWeeks = cachedWeeks;
+  }
+
+  // Ensure current + next week exist
+  const curWeek = getCurrentWeekLabel();
+  const nextWeek = getNextWeekLabel();
+  ensureWeeksExist(curWeek, nextWeek);
+  currentWeek = curWeek;
+
+  // Restore saved key
+  const savedKey = localStorage.getItem(STORAGE_KEY_UNIT);
+  if(savedKey){
+    formKey = savedKey;
+    document.getElementById('key-input').value = savedKey;
+  }
+
+  // Render immediately with cached data
+  if(cachedConfig && cachedConfig.units){
+    buildWeekChips();
+    renderCurrentSection();
+    hideLoader();
+  }
+
+  // Fetch fresh data in parallel
+  const [freshConfig, wRes] = await Promise.all([
+    apiGet({action:'config'}),
+    apiGet({action:'weeks'})
+  ]);
+
+  if(!freshConfig.error) {
+    config = freshConfig;
+    localStorage.setItem(CACHE_KEY_CONFIG, JSON.stringify(config));
+  }
+  allWeeks = wRes.weeks || [];
+  localStorage.setItem(CACHE_KEY_WEEKS, JSON.stringify(allWeeks));
+
+  ensureWeeksExist(curWeek, nextWeek);
+  currentWeek = curWeek;
+
+  buildWeekChips();
+  await loadPlans();
+  }finally{ hideLoader(); }
+}
+
+function ensureWeeksExist(curWeek, nextWeek){
+  if(!allWeeks.find(w=>w.label===nextWeek)){
+    allWeeks.unshift({label:nextWeek,unitCount:0});
+  }
+  if(!allWeeks.find(w=>w.label===curWeek)){
+    allWeeks.unshift({label:curWeek,unitCount:0});
+  }
+}
+
+function tryParseJSON(str){
+  try{ return str ? JSON.parse(str) : null; }catch(e){ return null; }
+}
+
+function showLoader(){ document.body.classList.add('is-loading'); }
+function hideLoader(){ document.body.classList.remove('is-loading'); }
+
+async function loadPlans(){
+  if(!currentWeek) return;
+  const res = await apiGet({action:'plans',week:currentWeek});
+  currentPlans = res.plans || [];
+  renderCurrentSection();
+}
+
+function updateDateBadge(){
+  const now = new Date();
+  const months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  document.getElementById('date-badge').textContent = now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+}
+
+// ─── Navigation ────────────────────────────────────────────
+function switchSection(id){
+  currentSection = id;
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.section===id);
+  });
+  renderCurrentSection();
+}
+
+function renderCurrentSection(){
+  switch(currentSection){
+    case 'units-section': renderUnitsSection(); break;
+    case 'manager-section': renderManagerSection(); break;
+  }
+}
+
+// ─── Week Chips ────────────────────────────────────────────
+function buildWeekChips(){
+  const el = document.getElementById('week-chips');
+  el.innerHTML = '';
+  const totalUnits = config.units?.length || 9;
+  allWeeks.forEach(w => {
+    const chip = document.createElement('button');
+    chip.className = 'week-chip'+(w.label===currentWeek?' active':'');
+    chip.innerHTML = esc(w.label)+' <span class="count">('+w.unitCount+'/'+totalUnits+')</span>';
+    chip.onclick = () => selectWeek(w.label);
+    el.appendChild(chip);
+  });
+}
+
+async function selectWeek(label){
+  currentWeek = label;
+  buildWeekChips();
+  showLoader();
+  try{ await loadPlans(); }finally{ hideLoader(); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// FORM SECTION
+// ═══════════════════════════════════════════════════════════
+
+async function validateUnitKey(){
+  const key = document.getElementById('key-input').value.trim();
+  if(!key){
+    document.getElementById('key-error').textContent = 'נא להזין קוד יחידה';
+    return;
+  }
+  document.getElementById('key-error').textContent = '';
+
+  showLoader();
+  try{
+  const res = await apiGet({action:'validate',key});
+  hideLoader();
+  if(res.valid){
+    formKey = key;
+    formUnit = res.unit;
+    localStorage.setItem(STORAGE_KEY_UNIT, key);
+    showForm();
+  } else {
+    document.getElementById('key-error').textContent = 'קוד יחידה לא תקין';
+  }
+  }finally{ hideLoader(); }
+}
+
+// Handle Enter key in input
+document.getElementById('key-input').addEventListener('keydown', function(e){
+  if(e.key==='Enter') validateUnitKey();
+});
+
+function logoutForm(){
+  formKey = '';
+  formUnit = '';
+  localStorage.removeItem(STORAGE_KEY_UNIT);
+  document.getElementById('form-login').style.display = 'block';
+  document.getElementById('form-main').style.display = 'none';
+}
+
+function showForm(){
+  document.getElementById('form-login').style.display = 'none';
+  document.getElementById('form-main').style.display = 'block';
+  document.getElementById('form-unit-name').textContent = formUnit;
+
+  // Build week selector
+  const sel = document.getElementById('form-week-select');
+  sel.innerHTML = '';
+  const cur = getCurrentWeekLabel();
+  const next = getNextWeekLabel();
+  sel.innerHTML += `<option value="${esc(cur)}">${esc(cur)} (שבוע נוכחי)</option>`;
+  sel.innerHTML += `<option value="${esc(next)}">${esc(next)} (שבוע הבא)</option>`;
+  // Also add any other weeks
+  allWeeks.forEach(w => {
+    if(w.label !== cur && w.label !== next){
+      sel.innerHTML += `<option value="${esc(w.label)}">${esc(w.label)}</option>`;
+    }
+  });
+
+  buildFormDays();
+  loadExistingFormData();
+}
+
+function buildFormDays(){
+  const container = document.getElementById('form-days');
+  container.innerHTML = '';
+
+  const weekLabel = document.getElementById('form-week-select').value;
+  const dates = getWeekDates(weekLabel);
+  const efforts = config.efforts || [];
+
+  // ── Shifts section ──
+  const shiftsSection = document.createElement('div');
+  shiftsSection.className = 'day-section';
+  shiftsSection.innerHTML = `
+    <div class="day-header open" onclick="toggleDay(this)">
+      <div class="day-title">
+        <span>👥 משמרות</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="filled-count" data-effort-count="shifts"></span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <div class="effort-days-grid">
+        ${DAYS.map((dayName, di) => {
+          const date = dates[di] || '';
+          return `
+          <div class="effort-day-cell">
+            <div class="effort-day-label">📅 ${esc(dayName)} <span class="day-date">${esc(date)}</span></div>
+            <div class="shift-fields">
+              <div class="shift-field">
+                <div class="shift-label boker">☀️ בוקר</div>
+                <textarea class="field-textarea" data-day="${dayName}" data-type="shift" data-name="בוקר" placeholder="משמרת בוקר..." rows="2"></textarea>
+              </div>
+              <div class="shift-field">
+                <div class="shift-label erev">🌙 ערב</div>
+                <textarea class="field-textarea" data-day="${dayName}" data-type="shift" data-name="ערב" placeholder="משמרת ערב..." rows="2"></textarea>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  container.appendChild(shiftsSection);
+
+  // ── One section per effort ──
+  efforts.forEach((eff, ei) => {
+    const icon = getEffortIcon(eff.name);
+    const section = document.createElement('div');
+    section.className = 'day-section';
+    section.innerHTML = `
+      <div class="day-header" onclick="toggleDay(this)">
+        <div class="day-title">
+          <span class="icon">${icon.emoji}</span>
+          <span>${esc(eff.name)}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="filled-count" data-effort-count="${ei}"></span>
+          <span class="chevron">▼</span>
+        </div>
+      </div>
+      <div class="day-body" style="display:none">
+        <div class="field-hint" style="margin-bottom:10px">${esc(eff.desc||'')}</div>
+        <div class="effort-days-grid">
+          ${DAYS.map((dayName, di) => {
+            const date = dates[di] || '';
+            return `
+            <div class="effort-day-cell">
+              <div class="effort-day-label">📅 ${esc(dayName)} <span class="day-date">${esc(date)}</span></div>
+              <textarea class="field-textarea" data-day="${esc(dayName)}" data-type="effort" data-name="${esc(eff.name)}" placeholder="כל שורה = פעולה נפרדת" rows="3"></textarea>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    container.appendChild(section);
+  });
+}
+
+function toggleDay(header){
+  const body = header.nextElementSibling;
+  const isOpen = header.classList.contains('open');
+  header.classList.toggle('open');
+  body.style.display = isOpen ? 'none' : 'block';
+}
+
+function onFormWeekChange(){
+  buildFormDays();
+  loadExistingFormData();
+}
+
+async function loadExistingFormData(){
+  const weekLabel = document.getElementById('form-week-select').value;
+  const res = await apiGet({action:'plans',week:weekLabel});
+  const plans = (res.plans||[]).filter(p=>p.unit===formUnit);
+
+  // Fill textareas
+  document.querySelectorAll('#form-days .field-textarea').forEach(ta => {
+    const day = ta.dataset.day;
+    const type = ta.dataset.type;
+    const name = ta.dataset.name;
+    const match = plans.find(p=>p.day===day && p.rowType===type && p.rowName===name);
+    ta.value = match ? match.content : '';
+  });
+
+  updateFormFilledCounts();
+}
+
+function updateFormFilledCounts(){
+  const efforts = config.efforts || [];
+  // Shifts section count
+  const shiftFields = document.querySelectorAll('#form-days .field-textarea[data-type="shift"]');
+  let shiftFilled = 0;
+  shiftFields.forEach(f => { if(f.value.trim()) shiftFilled++; });
+  const shiftEl = document.querySelector('[data-effort-count="shifts"]');
+  if(shiftEl) shiftEl.textContent = shiftFilled > 0 ? `${shiftFilled}/${shiftFields.length}` : '';
+
+  // Per-effort count
+  efforts.forEach((eff, ei) => {
+    const fields = document.querySelectorAll(`#form-days .field-textarea[data-name="${eff.name}"][data-type="effort"]`);
+    let filled = 0;
+    fields.forEach(f => { if(f.value.trim()) filled++; });
+    const el = document.querySelector(`[data-effort-count="${ei}"]`);
+    if(el) el.textContent = filled > 0 ? `${filled}/${fields.length}` : '';
+  });
+}
+
+// Listen for textarea changes to update counts
+document.getElementById('form-days')?.addEventListener('input', function(e){
+  if(e.target.classList.contains('field-textarea')) updateFormFilledCounts();
+});
+
+async function submitForm(){
+  const weekLabel = document.getElementById('form-week-select').value;
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('submit-status');
+
+  btn.disabled = true;
+  status.textContent = 'שולח...';
+  status.className = 'submit-status';
+
+  // Collect all field data
+  const rows = [];
+  document.querySelectorAll('#form-days .field-textarea').forEach(ta => {
+    const content = ta.value.trim();
+    if(content){
+      rows.push({
+        day: ta.dataset.day,
+        rowType: ta.dataset.type,
+        rowName: ta.dataset.name,
+        content: content
+      });
+    }
+  });
+
+  const res = await apiPost({
+    action:'submit',
+    key: formKey,
+    week: weekLabel,
+    data: rows
+  });
+
+  btn.disabled = false;
+
+  if(res.success){
+    status.textContent = '✅ התוכנית הוגשה בהצלחה! ('+res.rowCount+' שדות)';
+    status.className = 'submit-status success';
+    showToast('✅ תוכנית '+formUnit+' הוגשה בהצלחה');
+    // Refresh weeks
+    const wRes = await apiGet({action:'weeks'});
+    allWeeks = wRes.weeks || [];
+    const curWeek = getCurrentWeekLabel();
+    if(!allWeeks.find(w=>w.label===curWeek)){
+      allWeeks.unshift({label:curWeek,unitCount:0});
+    }
+    buildWeekChips();
+  } else {
+    status.textContent = '❌ שגיאה: '+(res.error||'Unknown error');
+    status.className = 'submit-status error';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// UNITS SECTION
+// ═══════════════════════════════════════════════════════════
+
+function renderUnitsSection(){
+  const units = config.units || [];
+  if(!currentUnitTab && units.length) currentUnitTab = units[0].name;
+
+  // Build tabs
+  const tabsEl = document.getElementById('unit-tabs');
+  tabsEl.innerHTML = '';
+  const submittedUnits = new Set(currentPlans.map(p=>p.unit));
+
+  units.forEach(u => {
+    const btn = document.createElement('button');
+    const hasData = submittedUnits.has(u.name);
+    btn.className = 'unit-tab'+(u.name===currentUnitTab?' active':'')+(hasData?' has-data':'');
+    btn.innerHTML = `<span class="dot"></span>${esc(u.name)}`;
+    btn.onclick = () => { currentUnitTab = u.name; renderUnitsSection(); };
+    tabsEl.appendChild(btn);
+  });
+
+  // Build day filter
+  buildDayFilter();
+
+  // Render view
+  renderUnitContent();
+}
+
+function setUnitView(view){
+  currentUnitView = view;
+  document.querySelectorAll('#units-section .view-pill').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#units-section .view-pill').forEach(p=>{
+    if((view==='efforts'&&p.textContent.includes('מאמצים'))||
+       (view==='shifts'&&p.textContent.includes('משמרות'))||
+       (view==='table'&&p.textContent.includes('טבלה'))) p.classList.add('active');
+  });
+  document.getElementById('day-filter-bar').style.display = view==='efforts'?'none':'flex';
+  renderUnitContent();
+}
+
+function buildDayFilter(){
+  const bar = document.getElementById('day-filter-bar');
+  bar.innerHTML = '<span class="day-filter-label">יום:</span>';
+
+  const allBtn = document.createElement('button');
+  allBtn.className = 'day-btn'+(currentDayFilter==='all'?' active':'');
+  allBtn.textContent = 'כל השבוע';
+  allBtn.onclick = () => { currentDayFilter='all'; renderUnitContent(); buildDayFilter(); };
+  bar.appendChild(allBtn);
+
+  const dates = getWeekDates(currentWeek);
+  DAYS.forEach((d,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'day-btn'+(currentDayFilter===d?' active':'');
+    btn.textContent = d+' '+dates[i];
+    btn.onclick = () => { currentDayFilter=d; renderUnitContent(); buildDayFilter(); };
+    bar.appendChild(btn);
+  });
+
+  bar.style.display = currentUnitView==='efforts'?'none':'flex';
+}
+
+function renderUnitContent(){
+  const el = document.getElementById('unit-content');
+  const unitPlans = currentPlans.filter(p=>p.unit===currentUnitTab);
+
+  if(!unitPlans.length){
+    el.innerHTML = '<p class="no-data">לא הוגשה תוכנית ליחידה זו בשבוע הנבחר</p>';
+    return;
+  }
+
+  switch(currentUnitView){
+    case 'efforts': el.innerHTML = renderEffortsView(unitPlans); break;
+    case 'shifts': el.innerHTML = renderShiftsView(unitPlans); break;
+    case 'table': el.innerHTML = renderTableView(unitPlans); break;
+  }
+}
+
+// ── Efforts View ───────────────────────────────────────────
+function renderEffortsView(plans){
+  const effortPlans = plans.filter(p=>p.rowType==='effort');
+  const effortNames = [...new Set(effortPlans.map(p=>p.rowName))];
+
+  if(!effortNames.length) return '<p class="no-data">לא נמצאו מאמצים</p>';
+
+  const cards = effortNames.map(name => {
+    const icon = getEffortIcon(name);
+    const items = effortPlans.filter(p=>p.rowName===name);
+    const allContent = items.map(p=>`<b>${esc(p.day)}:</b> ${esc(p.content).replace(/\n/g,'<br>')}`).join('<br>');
+    return `<div class="effort-card">
+      <div class="effort-card-top">
+        <div class="effort-icon-wrap ${icon.bg}">${icon.emoji}</div>
+        <div class="effort-name">${esc(name)}</div>
+      </div>
+      <div class="effort-card-body"><div style="font-size:12px;line-height:1.6">${allContent}</div></div>
+    </div>`;
+  }).join('');
+
+  return `<div class="card">
+    <div class="card-header"><span class="icon">🎯</span><span class="title">מאמצי היקל"ר השבועיים — ${esc(currentUnitTab)}</span></div>
+    <div class="card-body"><div class="efforts-grid">${cards}</div></div>
+  </div>`;
+}
+
+// ── Shifts View ────────────────────────────────────────────
+function renderShiftsView(plans){
+  const shiftPlans = plans.filter(p=>p.rowType==='shift');
+  if(!shiftPlans.length) return '<p class="no-data">לא הוגדרו משמרות</p>';
+
+  const dates = getWeekDates(currentWeek);
+  const activeDays = currentDayFilter==='all' ? DAYS : [currentDayFilter];
+
+  const cols = activeDays.map(dayName => {
+    const di = DAYS.indexOf(dayName);
+    const isWe = di>=5;
+    const boker = shiftPlans.filter(p=>p.day===dayName&&p.rowName==='בוקר');
+    const erev = shiftPlans.filter(p=>p.day===dayName&&p.rowName==='ערב');
+    const bokerContent = boker.map(p=>p.content).join('\n');
+    const erevContent = erev.map(p=>p.content).join('\n');
+
+    return `<div class="shift-day-col">
+      <div class="shift-day-header${isWe?' weekend':''}">
+        ${esc(dayName)}<span class="sh-date">${esc(dates[di]||'')}</span>
+      </div>
+      <div class="shift-block">
+        <span class="shift-label-tag boker">☀️ בוקר</span>
+        ${bokerContent
+          ? `<div class="shift-content">${formatBullets(bokerContent)}</div>`
+          : `<div class="shift-empty">—</div>`}
+      </div>
+      <div class="shift-block">
+        <span class="shift-label-tag erev">🌙 ערב</span>
+        ${erevContent
+          ? `<div class="shift-content">${formatBullets(erevContent)}</div>`
+          : `<div class="shift-empty">—</div>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="card">
+    <div class="card-header"><span class="icon">🕐</span><span class="title">משמרות — ${esc(currentUnitTab)}</span></div>
+    <div class="card-body" style="padding:0">
+      <div class="shifts-week-grid" style="grid-template-columns:repeat(${activeDays.length},1fr)">${cols}</div>
+    </div>
+  </div>`;
+}
+
+// ── Table View ─────────────────────────────────────────────
+function renderTableView(plans){
+  const dates = getWeekDates(currentWeek);
+  const activeDays = currentDayFilter==='all' ? DAYS : [currentDayFilter];
+  const efforts = config.efforts || [];
+
+  const thCols = activeDays.map(d => {
+    const di = DAYS.indexOf(d);
+    const isWe = di>=5;
+    return `<th${isWe?' class="weekend-col"':''}><span class="day-he">${esc(d)}</span><span class="day-dt">${esc(dates[di]||'')}</span></th>`;
+  }).join('');
+
+  // Shifts rows
+  const shiftRows = ['בוקר','ערב'].map(shift => {
+    const label = shift==='בוקר'
+      ? `<td><div class="row-label"><div class="row-icon eicon-default">${shift==='בוקר'?'☀️':'🌙'}</div><div class="row-text"><span class="row-effort-name">משמרת ${shift}</span></div></div></td>`
+      : `<td><div class="row-label"><div class="row-icon eicon-default">🌙</div><div class="row-text"><span class="row-effort-name">משמרת ${shift}</span></div></div></td>`;
+    const cells = activeDays.map(d => {
+      const di = DAYS.indexOf(d);
+      const isWe = di>=5;
+      const p = plans.find(p=>p.day===d&&p.rowType==='shift'&&p.rowName===shift);
+      return `<td${isWe?' class="weekend-col"':''}>${p?formatBulletsList(p.content):'<span style="color:#ccc">—</span>'}</td>`;
+    }).join('');
+    return `<tr>${label}${cells}</tr>`;
+  }).join('');
+
+  // Effort rows
+  const effortRows = efforts.map(eff => {
+    const icon = getEffortIcon(eff.name);
+    const label = `<td>
+      <div class="row-label">
+        <div class="row-icon ${icon.bg}">${icon.emoji}</div>
+        <div class="row-text">
+          <span class="row-effort-name">${esc(eff.name)}</span>
+        </div>
+      </div></td>`;
+    const cells = activeDays.map(d => {
+      const di = DAYS.indexOf(d);
+      const isWe = di>=5;
+      const p = plans.find(p=>p.day===d&&p.rowType==='effort'&&p.rowName===eff.name);
+      return `<td${isWe?' class="weekend-col"':''}>${p?formatBulletsList(p.content):'<span style="color:#ccc">—</span>'}</td>`;
+    }).join('');
+    return `<tr>${label}${cells}</tr>`;
+  }).join('');
+
+  return `<div class="card">
+    <div class="card-header"><span class="icon">📅</span><span class="title">טבלה שבועית — ${esc(currentUnitTab)}</span></div>
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table class="week"><thead><tr><th>שדה</th>${thCols}</tr></thead>
+        <tbody>${shiftRows}${effortRows}</tbody></table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MANAGER SECTION
+// ═══════════════════════════════════════════════════════════
+
+function renderManagerSection(){
+  const el = document.getElementById('manager-content');
+  const units = config.units || [];
+  const efforts = config.efforts || [];
+  const submittedUnits = new Set(currentPlans.map(p=>p.unit));
+
+  // Submission status
+  let statusHTML = '<h3 style="font-size:16px;color:#2d3d1e;margin-bottom:10px">סטטוס הגשה — שבוע '+esc(currentWeek)+'</h3>';
+  statusHTML += '<div class="manager-status">';
+  units.forEach(u => {
+    const submitted = submittedUnits.has(u.name);
+    statusHTML += `<span class="status-chip ${submitted?'submitted':'missing'}">${submitted?'✅':'⏳'} ${esc(u.name)}</span>`;
+  });
+  statusHTML += '</div>';
+
+  // Aggregation by effort
+  let effortHTML = '<h3 style="font-size:16px;color:#2d3d1e;margin:20px 0 10px">ריכוז מאמצים</h3>';
+
+  efforts.forEach(eff => {
+    const icon = getEffortIcon(eff.name);
+    const effortPlans = currentPlans.filter(p=>p.rowType==='effort'&&p.rowName===eff.name);
+
+    // Group by day
+    let daysHTML = '';
+    DAYS.forEach(day => {
+      const dayData = effortPlans.filter(p=>p.day===day);
+      if(!dayData.length) return;
+
+      const unitsHTML = dayData.map(p =>
+        `<div class="manager-unit-item"><span class="unit-name">${esc(p.unit)}</span>${esc(p.content).replace(/\n/g,', ')}</div>`
+      ).join('');
+
+      daysHTML += `<div class="manager-day-row">
+        <div class="manager-day-name">${esc(day)}</div>
+        <div class="manager-day-units">${unitsHTML}</div>
+      </div>`;
+    });
+
+    if(!daysHTML) daysHTML = '<div class="manager-day-row"><div class="manager-empty">אין נתונים למאמץ זה</div></div>';
+
+    effortHTML += `<div class="manager-effort-section">
+      <div class="manager-effort-header"><span class="m-icon">${icon.emoji}</span>${esc(eff.name)}</div>
+      <div class="manager-effort-body">${daysHTML}</div>
+    </div>`;
+  });
+
+  // Shifts aggregation
+  let shiftsHTML = '<h3 style="font-size:16px;color:#2d3d1e;margin:20px 0 10px">ריכוז משמרות</h3>';
+  const shiftPlans = currentPlans.filter(p=>p.rowType==='shift');
+
+  ['בוקר','ערב'].forEach(shift => {
+    const shiftIcon = shift==='בוקר'?'☀️':'🌙';
+    let daysHTML = '';
+    DAYS.forEach(day => {
+      const dayData = shiftPlans.filter(p=>p.day===day&&p.rowName===shift);
+      if(!dayData.length) return;
+
+      const unitsHTML = dayData.map(p =>
+        `<div class="manager-unit-item"><span class="unit-name">${esc(p.unit)}</span>${esc(p.content).replace(/\n/g,', ')}</div>`
+      ).join('');
+
+      daysHTML += `<div class="manager-day-row">
+        <div class="manager-day-name">${esc(day)}</div>
+        <div class="manager-day-units">${unitsHTML}</div>
+      </div>`;
+    });
+
+    if(!daysHTML) daysHTML = '<div class="manager-day-row"><div class="manager-empty">אין נתונים</div></div>';
+
+    shiftsHTML += `<div class="manager-effort-section">
+      <div class="manager-effort-header"><span class="m-icon">${shiftIcon}</span>משמרת ${shift}</div>
+      <div class="manager-effort-body">${daysHTML}</div>
+    </div>`;
+  });
+
+  el.innerHTML = statusHTML + effortHTML + shiftsHTML;
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+
+function formatBullets(text){
+  return text.split(/\n/).filter(s=>s.trim()).map(s=>'• '+esc(s.trim().replace(/^\*\s*/,''))).join('<br>');
+}
+
+function formatBulletsList(text){
+  const items = text.split(/\n/).filter(s=>s.trim());
+  if(!items.length) return '<span style="color:#ccc">—</span>';
+  return '<ul class="bullet-list">'+items.map(s=>'<li>'+esc(s.trim().replace(/^\*\s*/,''))+'</li>').join('')+'</ul>';
+}
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ─── Start ─────────────────────────────────────────────────
+// Only init if gate is already passed (otherwise init is called after gate check)
+if(isGateValid()) init();
+</script>
+</body>
+</html>
