@@ -106,6 +106,12 @@ a{color:inherit;text-decoration:none}
 .submit-status.success{color:#2d8a2d}
 .submit-status.error{color:#c0392b}
 
+/* Sticky submit bar */
+.sticky-submit{position:fixed;bottom:0;left:0;right:0;background:rgba(45,61,30,.95);backdrop-filter:blur(6px);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:900;transform:translateY(100%);transition:transform .25s ease;box-shadow:0 -2px 12px rgba(0,0,0,.2)}
+.sticky-submit.visible{transform:translateY(0)}
+.sticky-submit .btn{font-size:14px;padding:10px 30px}
+.sticky-submit .sticky-unit{color:#c9a227;font-size:13px;font-weight:700}
+
 /* ─── Followup Section ──────────────────────────────────── */
 .followup-login{max-width:400px;margin:40px auto;text-align:center}
 .followup-login h2{font-size:22px;color:#2d3d1e;margin-bottom:8px}
@@ -395,6 +401,12 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
     </div>
   </div>
 
+  <!-- Sticky submit bar (appears when original button is scrolled out of view) -->
+  <div class="sticky-submit" id="sticky-submit">
+    <span class="sticky-unit" id="sticky-unit-name"></span>
+    <button class="btn btn-success" onclick="submitForm()">💾 שלח תוכנית</button>
+  </div>
+
   <!-- ── UNITS SECTION ─────────────────────────────────── -->
   <div id="units-section" class="section">
     <div class="unit-tabs" id="unit-tabs"></div>
@@ -445,6 +457,12 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
         <div class="submit-status" id="followup-status"></div>
       </div>
     </div>
+  </div>
+
+  <!-- Sticky followup bar -->
+  <div class="sticky-submit" id="sticky-followup">
+    <span class="sticky-unit" id="sticky-followup-unit"></span>
+    <button class="btn btn-success" onclick="submitFollowup()">💾 שמור מעקב</button>
   </div>
 
   <!-- ── MANAGER SECTION ───────────────────────────────── -->
@@ -807,6 +825,9 @@ function switchSection(id){
   // Hide global week bar on form/followup sections (they have their own week selector)
   const weekBar = document.getElementById('week-bar');
   weekBar.style.display = (id==='form-section'||id==='followup-section') ? 'none' : 'flex';
+  // Hide sticky buttons when leaving their sections
+  document.getElementById('sticky-submit').classList.remove('visible');
+  document.getElementById('sticky-followup').classList.remove('visible');
   renderCurrentSection();
 }
 
@@ -885,6 +906,7 @@ function showForm(){
   document.getElementById('form-login').style.display = 'none';
   document.getElementById('form-main').style.display = 'block';
   document.getElementById('form-unit-name').textContent = formUnit;
+  document.getElementById('sticky-unit-name').textContent = formUnit;
 
   // Build week selector
   const sel = document.getElementById('form-week-select');
@@ -1127,6 +1149,7 @@ function showFollowupForm(){
   document.getElementById('followup-login').style.display = 'none';
   document.getElementById('followup-main').style.display = 'block';
   document.getElementById('followup-unit-name').textContent = followupUnit;
+  document.getElementById('sticky-followup-unit').textContent = followupUnit;
 
   // Build week selector
   const sel = document.getElementById('followup-week-select');
@@ -1728,6 +1751,28 @@ function showToast(msg){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
 }
+
+// ─── Sticky submit observer ────────────────────────────────
+window.addEventListener('scroll', function(){
+  // Form submit sticky
+  if(currentSection === 'form-section'){
+    const origBtn = document.getElementById('submit-btn');
+    const sticky = document.getElementById('sticky-submit');
+    if(origBtn && sticky){
+      const rect = origBtn.getBoundingClientRect();
+      sticky.classList.toggle('visible', !(rect.top < window.innerHeight && rect.bottom > 0));
+    }
+  }
+  // Followup save sticky
+  if(currentSection === 'followup-section'){
+    const origBtn = document.getElementById('followup-submit-btn');
+    const sticky = document.getElementById('sticky-followup');
+    if(origBtn && sticky){
+      const rect = origBtn.getBoundingClientRect();
+      sticky.classList.toggle('visible', !(rect.top < window.innerHeight && rect.bottom > 0));
+    }
+  }
+}, {passive:true});
 
 // ─── Start ─────────────────────────────────────────────────
 // Only init if gate is already passed (otherwise init is called after gate check)
