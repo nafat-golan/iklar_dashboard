@@ -1153,11 +1153,13 @@ async function validateFollowupKey(){
     if(res.valid){
       followupKey = key;
       followupUnit = res.unit;
+      hideLoader();
       showFollowupForm();
     } else {
       document.getElementById('followup-key-error').textContent = 'קוד יחידה לא תקין';
+      hideLoader();
     }
-  }finally{ hideLoader(); }
+  }catch(e){ hideLoader(); throw e; }
 }
 
 document.getElementById('followup-key-input').addEventListener('keydown', function(e){
