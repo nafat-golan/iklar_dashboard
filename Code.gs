@@ -273,22 +273,38 @@ function submitFollowup(body) {
   const followupTs = new Date().toISOString();
   let updated = 0;
 
+  // Build a map of updates to apply in batch
+  const updates = []; // [{row, status, note}]
+
   for (const item of items) {
-    // Find matching row: week + unit + day + rowType + rowName
     for (let i = 1; i < allData.length; i++) {
       if (String(allData[i][0]).trim() === week &&
           String(allData[i][1]).trim() === unit &&
           String(allData[i][2]).trim() === item.day &&
           String(allData[i][3]).trim() === item.rowType &&
           String(allData[i][4]).trim() === item.rowName) {
-        // Update columns H (8), I (9), J (10) — 1-indexed
-        ws.getRange(i + 1, 8).setValue(item.status || '');
-        ws.getRange(i + 1, 9).setValue(item.note || '');
-        ws.getRange(i + 1, 10).setValue(followupTs);
+        updates.push({row: i + 1, status: item.status || '', note: item.note || ''});
         updated++;
         break;
       }
     }
+  }
+
+  // Batch write all updates
+  for (const u of updates) {
+    allData[u.row - 1][7] = u.status;
+    allData[u.row - 1][8] = u.note;
+    allData[u.row - 1][9] = followupTs;
+  }
+
+  if (updates.length > 0) {
+    // Find min/max rows to write only the affected range
+    const minRow = Math.min(...updates.map(u => u.row));
+    const maxRow = Math.max(...updates.map(u => u.row));
+    const numRows = maxRow - minRow + 1;
+    const numCols = allData[0].length >= 10 ? 10 : allData[0].length;
+    const rangeData = allData.slice(minRow - 1, maxRow).map(r => r.slice(0, numCols));
+    ws.getRange(minRow, 1, numRows, numCols).setValues(rangeData);
   }
 
   return { success: true, unit, week, updated };
