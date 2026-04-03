@@ -905,7 +905,7 @@ async function validateUnitKey(){
   } else {
     document.getElementById('key-error').textContent = 'קוד יחידה לא תקין';
   }
-  }finally{ hideLoader(); }
+  }catch(e){ hideLoader(); throw e; }
 }
 
 // Handle Enter key in input
