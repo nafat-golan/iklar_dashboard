@@ -995,6 +995,8 @@ function onFormWeekChange(){
 
 async function loadExistingFormData(){
   const weekLabel = document.getElementById('form-week-select').value;
+  showLoader();
+  try{
   const res = await apiGet({action:'plans',week:weekLabel});
   const plans = (res.plans||[]).filter(p=>p.unit===formUnit);
 
@@ -1008,6 +1010,7 @@ async function loadExistingFormData(){
   });
 
   updateFormFilledCounts();
+  }finally{ hideLoader(); }
 }
 
 function updateFormFilledCounts(){
