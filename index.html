@@ -1342,7 +1342,9 @@ async function submitFollowup(){
 
   const items = Object.values(itemMap).map(item => {
     const statusStr = item.lineStatuses.map(s=>s||'').join(',');
-    const noteInput = document.querySelector(`#followup-days .followup-note[data-day="${item.day}"][data-type="${item.rowType}"][data-name="${item.rowName}"]`);
+    const noteInput = Array.from(document.querySelectorAll('#followup-days .followup-note')).find(el =>
+      el.dataset.day===item.day && el.dataset.type===item.rowType && el.dataset.name===item.rowName
+    );
     const note = noteInput ? noteInput.value.trim() : '';
     return {day:item.day, rowType:item.rowType, rowName:item.rowName, status:statusStr, note};
   });
