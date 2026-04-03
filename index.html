@@ -272,7 +272,7 @@ table.matrix tbody td:first-child{background:#f2ede3!important;padding:8px 10px;
 .matrix-row-icon{font-size:16px;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .matrix-row-name{font-size:12px;font-weight:700;color:#2d3d1e}
 
-.matrix-unit-block{background:#f7f3ea;border:1px solid #e0d8c4;border-radius:6px;padding:5px 7px;margin-bottom:4px;position:relative}
+.matrix-unit-block{background:#f7f3ea;border:1px solid #e0d8c4;border-radius:6px;padding:5px 7px;margin-bottom:4px;position:relative;border-right:4px solid #ccc}
 .matrix-unit-block:last-child{margin-bottom:0}
 .matrix-unit-name{font-size:10px;font-weight:700;color:#2d3d1e;margin-bottom:2px;display:flex;align-items:center;justify-content:space-between}
 .matrix-unit-pct{font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap}
@@ -1755,10 +1755,18 @@ function renderManagerMatrix(){
   el.innerHTML = statusHTML + tableHTML;
 }
 
+const UNIT_COLORS = ['#e74c3c','#2e86de','#27ae60','#f39c12','#8e44ad','#e84393','#00b894','#d35400','#34495e'];
+function getUnitColor(unitName){
+  const units = config.units || [];
+  const idx = units.findIndex(u=>u.name===unitName);
+  return UNIT_COLORS[idx>=0?idx%UNIT_COLORS.length:0];
+}
+
 function buildMatrixBlock(p){
   const lines = p.content.split(/\n/).filter(s=>s.trim());
   const statuses = parseLineStatuses(p.status, lines.length);
   const agg = getAggregateStatus(statuses);
+  const unitColor = getUnitColor(p.unit);
 
   // Aggregate badge
   let pctClass, pctText;
@@ -1777,7 +1785,7 @@ function buildMatrixBlock(p){
 
   const noteHTML = p.followupNote ? `<div style="font-size:9px;color:#999;margin-top:2px">📝 ${esc(p.followupNote)}</div>` : '';
 
-  return `<div class="matrix-unit-block">
+  return `<div class="matrix-unit-block" style="border-right-color:${unitColor}">
     <div class="matrix-unit-name">
       <span>${esc(p.unit)}</span>
       <span class="matrix-unit-pct ${pctClass}">${pctText}</span>
@@ -1792,7 +1800,8 @@ function buildMatrixBlockPlain(p){
   const itemsHTML = lines.map(line =>
     `<div class="item-line"><span class="item-dot">▪</span>${esc(line.trim())}</div>`
   ).join('');
-  return `<div class="matrix-unit-block">
+  const unitColor = getUnitColor(p.unit);
+  return `<div class="matrix-unit-block" style="border-right-color:${unitColor}">
     <div class="matrix-unit-name"><span>${esc(p.unit)}</span></div>
     <div class="matrix-unit-items">${itemsHTML}</div>
   </div>`;
