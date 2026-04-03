@@ -655,15 +655,22 @@ async function apiPost(body){
     return {success:true,unit:formUnit,week:body.week,rowCount:10};
   }
   try{
+    const controller = new AbortController();
+    const timeoutId = setTimeout(()=>controller.abort(), 60000);
     const res = await fetch(API_URL, {
       method:'POST',
       headers:{'Content-Type':'text/plain'},
       body:JSON.stringify(body),
-      redirect:'follow'
+      redirect:'follow',
+      signal:controller.signal
     });
+    clearTimeout(timeoutId);
     const text = await res.text();
     try{ return JSON.parse(text); }catch(e){ console.error('apiPost parse error:', text); return {error:'Invalid response from server'}; }
-  }catch(e){ console.error('apiPost error:',e); return {error:e.message}; }
+  }catch(e){
+    if(e.name==='AbortError') return {error:'הבקשה נמשכה יותר מדי זמן — נסה שוב'};
+    console.error('apiPost error:',e); return {error:e.message};
+  }
 }
 
 // ─── Week Helpers ──────────────────────────────────────────

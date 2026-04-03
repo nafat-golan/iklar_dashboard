@@ -273,9 +273,6 @@ function submitFollowup(body) {
   const followupTs = new Date().toISOString();
   let updated = 0;
 
-  // Build a map of updates to apply in batch
-  const updates = []; // [{row, status, note}]
-
   for (const item of items) {
     for (let i = 1; i < allData.length; i++) {
       if (String(allData[i][0]).trim() === week &&
@@ -283,30 +280,15 @@ function submitFollowup(body) {
           String(allData[i][2]).trim() === item.day &&
           String(allData[i][3]).trim() === item.rowType &&
           String(allData[i][4]).trim() === item.rowName) {
-        updates.push({row: i + 1, status: item.status || '', note: item.note || ''});
+        // Write followup columns directly — H, I, J (columns 8, 9, 10)
+        ws.getRange(i + 1, 8, 1, 3).setValues([[item.status || '', item.note || '', followupTs]]);
         updated++;
         break;
       }
     }
   }
 
-  // Batch write all updates
-  for (const u of updates) {
-    allData[u.row - 1][7] = u.status;
-    allData[u.row - 1][8] = u.note;
-    allData[u.row - 1][9] = followupTs;
-  }
-
-  if (updates.length > 0) {
-    // Find min/max rows to write only the affected range
-    const minRow = Math.min(...updates.map(u => u.row));
-    const maxRow = Math.max(...updates.map(u => u.row));
-    const numRows = maxRow - minRow + 1;
-    const numCols = allData[0].length >= 10 ? 10 : allData[0].length;
-    const rangeData = allData.slice(minRow - 1, maxRow).map(r => r.slice(0, numCols));
-    ws.getRange(minRow, 1, numRows, numCols).setValues(rangeData);
-  }
-
+  SpreadsheetApp.flush();
   return { success: true, unit, week, updated };
 }
 
