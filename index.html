@@ -451,8 +451,8 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
   <div id="manager-section" class="section active">
     <div class="view-bar" style="margin-bottom:16px">
       <div class="view-toggle">
-        <button class="view-pill active" onclick="setManagerView('list')">📋 רשימה</button>
-        <button class="view-pill" onclick="setManagerView('matrix')">📊 מטריצה</button>
+        <button class="view-pill" onclick="setManagerView('list')">📋 רשימה</button>
+        <button class="view-pill active" onclick="setManagerView('matrix')">📊 מטריצה</button>
       </div>
     </div>
     <div id="manager-content"></div>
@@ -539,7 +539,7 @@ let currentSection = 'manager-section';
 let currentUnitTab = '';
 let currentUnitView = 'efforts';
 let currentDayFilter = 'all';
-let managerView = 'list';
+let managerView = 'matrix';
 let formUnit = '';
 let formKey = '';
 let followupUnit = '';
