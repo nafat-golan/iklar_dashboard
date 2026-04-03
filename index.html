@@ -804,6 +804,9 @@ function switchSection(id){
   document.querySelectorAll('.nav-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.section===id);
   });
+  // Hide global week bar on form/followup sections (they have their own week selector)
+  const weekBar = document.getElementById('week-bar');
+  weekBar.style.display = (id==='form-section'||id==='followup-section') ? 'none' : 'flex';
   renderCurrentSection();
 }
 
