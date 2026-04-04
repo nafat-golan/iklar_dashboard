@@ -241,9 +241,10 @@ table.week tbody td:first-child{background:#f2ede3!important;padding:8px 10px;bo
 
 /* ─── Manager Dashboard ─────────────────────────────────── */
 .manager-status{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
-.status-chip{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px}
+.status-chip{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;transition:opacity .2s}
 .status-chip.submitted{background:#e8f5e9;color:#2d8a2d;border:1px solid #c8e6c9}
 .status-chip.missing{background:#fff3e0;color:#e65100;border:1px solid #ffe0b2}
+.status-chip.dimmed{opacity:.35;filter:grayscale(.8)}
 
 .manager-effort-section{margin-bottom:20px}
 .manager-effort-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#2d3d1e;border-radius:10px 10px 0 0;color:#c9a227;font-size:15px;font-weight:700}
@@ -568,6 +569,7 @@ let currentUnitTab = '';
 let currentUnitView = 'efforts';
 let currentDayFilter = 'all';
 let managerView = 'matrix';
+let managerHiddenUnits = new Set();
 let formUnit = '';
 let formKey = '';
 let followupUnit = '';
@@ -1614,16 +1616,19 @@ function renderManagerSection(){
     let doneCount=0, totalCount=0;
     unitItems.forEach(p=>{const lines=p.content.split(/\n/).filter(s=>s.trim());const st=parseLineStatuses(p.status,lines.length);totalCount+=lines.length;doneCount+=st.filter(s=>s==='done').length;});
     const completionText = totalCount > 0 ? ` (${doneCount}/${totalCount})` : '';
-    statusHTML += `<span class="status-chip ${submitted?'submitted':'missing'}">${submitted?'✅':'⏳'} ${esc(u.name)}${completionText}</span>`;
+    const dimmed = managerHiddenUnits.has(u.name) ? ' dimmed' : '';
+    statusHTML += `<span class="status-chip ${submitted?'submitted':'missing'}${dimmed}" data-unit="${esc(u.name)}" onclick="toggleManagerUnit(this.dataset.unit)"><span style="border-right:3px solid ${getUnitColor(u.name)};padding-right:6px">${submitted?'✅':'⏳'} ${esc(u.name)}${completionText}</span></span>`;
   });
   statusHTML += '</div>';
+
+  const visiblePlans = currentPlans.filter(p=>!managerHiddenUnits.has(p.unit));
 
   // Aggregation by effort
   let effortHTML = '<h3 style="font-size:16px;color:#2d3d1e;margin:20px 0 10px">ריכוז מאמצים</h3>';
 
   efforts.forEach(eff => {
     const icon = getEffortIcon(eff.name);
-    const effortPlans = currentPlans.filter(p=>p.rowType==='effort'&&p.rowName===eff.name);
+    const effortPlans = visiblePlans.filter(p=>p.rowType==='effort'&&p.rowName===eff.name);
 
     // Group by day
     let daysHTML = '';
@@ -1656,7 +1661,7 @@ function renderManagerSection(){
 
   // Shifts aggregation
   let shiftsHTML = '<h3 style="font-size:16px;color:#2d3d1e;margin:20px 0 10px">ריכוז משמרות</h3>';
-  const shiftPlans = currentPlans.filter(p=>p.rowType==='shift');
+  const shiftPlans = visiblePlans.filter(p=>p.rowType==='shift');
 
   ['בוקר','ערב'].forEach(shift => {
     const shiftIcon = shift==='בוקר'?'☀️':'🌙';
@@ -1686,6 +1691,12 @@ function renderManagerSection(){
   el.innerHTML = statusHTML + effortHTML + shiftsHTML;
 }
 
+function toggleManagerUnit(name){
+  if(managerHiddenUnits.has(name)) managerHiddenUnits.delete(name);
+  else managerHiddenUnits.add(name);
+  renderCurrentSection();
+}
+
 function setManagerView(view){
   managerView = view;
   document.querySelectorAll('#manager-section .view-pill').forEach(p=>p.classList.remove('active'));
@@ -1712,9 +1723,12 @@ function renderManagerMatrix(){
     let doneCount=0, totalCount=0;
     unitItems.forEach(p=>{const lines=p.content.split(/\n/).filter(s=>s.trim());const st=parseLineStatuses(p.status,lines.length);totalCount+=lines.length;doneCount+=st.filter(s=>s==='done').length;});
     const completionText = totalCount > 0 ? ` (${doneCount}/${totalCount})` : '';
-    statusHTML += `<span class="status-chip ${submitted?'submitted':'missing'}">${submitted?'✅':'⏳'} ${esc(u.name)}${completionText}</span>`;
+    const dimmed = managerHiddenUnits.has(u.name) ? ' dimmed' : '';
+    statusHTML += `<span class="status-chip ${submitted?'submitted':'missing'}${dimmed}" data-unit="${esc(u.name)}" onclick="toggleManagerUnit(this.dataset.unit)"><span style="border-right:3px solid ${getUnitColor(u.name)};padding-right:6px">${submitted?'✅':'⏳'} ${esc(u.name)}${completionText}</span></span>`;
   });
   statusHTML += '</div>';
+
+  const visiblePlans = currentPlans.filter(p=>!managerHiddenUnits.has(p.unit));
 
   // Build header
   const thCols = DAYS.map((d,i) =>
@@ -1726,7 +1740,7 @@ function renderManagerMatrix(){
     const shiftIcon = shift==='בוקר'?'☀️':'🌙';
     const label = `<td><div class="matrix-row-label"><div class="matrix-row-icon eicon-default">${shiftIcon}</div><span class="matrix-row-name">משמרת ${esc(shift)}</span></div></td>`;
     const cells = DAYS.map(day => {
-      const dayPlans = currentPlans.filter(p=>p.day===day&&p.rowType==='shift'&&p.rowName===shift);
+      const dayPlans = visiblePlans.filter(p=>p.day===day&&p.rowType==='shift'&&p.rowName===shift);
       if(!dayPlans.length) return '<td><div class="matrix-empty">—</div></td>';
       const blocks = dayPlans.map(p => buildMatrixBlockPlain(p)).join('');
       return `<td>${blocks}</td>`;
@@ -1739,7 +1753,7 @@ function renderManagerMatrix(){
     const icon = getEffortIcon(eff.name);
     const label = `<td><div class="matrix-row-label"><div class="matrix-row-icon ${icon.bg}">${icon.emoji}</div><span class="matrix-row-name">${esc(eff.name)}</span></div></td>`;
     const cells = DAYS.map(day => {
-      const dayPlans = currentPlans.filter(p=>p.day===day&&p.rowType==='effort'&&p.rowName===eff.name);
+      const dayPlans = visiblePlans.filter(p=>p.day===day&&p.rowType==='effort'&&p.rowName===eff.name);
       if(!dayPlans.length) return '<td><div class="matrix-empty">—</div></td>';
       const blocks = dayPlans.map(p => buildMatrixBlock(p)).join('');
       return `<td>${blocks}</td>`;
@@ -1755,7 +1769,7 @@ function renderManagerMatrix(){
   el.innerHTML = statusHTML + tableHTML;
 }
 
-const UNIT_COLORS = ['#e74c3c','#2e86de','#222222','#6bcb77','#6b8e23','#8e44ad','#17a2b8','#8B4513','#888888'];
+const UNIT_COLORS = ['#e74c3c','#2e86de','#222222','#6bcb77','#6b8e23','#8e44ad','#00d2d3','#8B4513','#888888'];
 function getUnitColor(unitName){
   const units = config.units || [];
   const idx = units.findIndex(u=>u.name===unitName);
