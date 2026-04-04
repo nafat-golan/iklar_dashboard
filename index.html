@@ -929,13 +929,13 @@ function showForm(){
   document.getElementById('form-unit-name').textContent = formUnit;
   document.getElementById('sticky-unit-name').textContent = formUnit;
 
-  // Build week selector
+  // Build week selector — default to next week for plan submission
   const sel = document.getElementById('form-week-select');
   sel.innerHTML = '';
   const cur = getCurrentWeekLabel();
   const next = getNextWeekLabel();
-  sel.innerHTML += `<option value="${esc(cur)}">${esc(cur)} (שבוע נוכחי)</option>`;
   sel.innerHTML += `<option value="${esc(next)}">${esc(next)} (שבוע הבא)</option>`;
+  sel.innerHTML += `<option value="${esc(cur)}">${esc(cur)} (שבוע נוכחי)</option>`;
   // Also add any other weeks
   allWeeks.forEach(w => {
     if(w.label !== cur && w.label !== next){
