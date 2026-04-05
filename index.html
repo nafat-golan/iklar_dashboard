@@ -316,6 +316,19 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
   .shifts-week-grid{grid-template-columns:repeat(3,1fr)}
   .shift-fields{grid-template-columns:1fr}
 }
+/* ─── Charts View ───────────────────────────────────────── */
+.charts-container{display:flex;flex-direction:column;gap:24px}
+.chart-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden}
+.chart-card-header{background:#2d3d1e;padding:11px 20px;display:flex;align-items:center;gap:10px}
+.chart-card-header .icon{font-size:17px}
+.chart-card-header .title{color:#c9a227;font-size:14px;font-weight:700}
+.chart-card-body{padding:20px}
+.chart-card-body canvas{max-height:400px}
+.radar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.radar-grid-item{text-align:center}
+.radar-grid-item .radar-label{font-size:13px;font-weight:700;color:#2d3d1e;margin-bottom:4px}
+@media(max-width:900px){.radar-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.radar-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body class="is-loading">
@@ -482,6 +495,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
       <div class="view-toggle">
         <button class="view-pill" onclick="setManagerView('list')">📋 רשימה</button>
         <button class="view-pill active" onclick="setManagerView('matrix')">📊 מטריצה</button>
+        <button class="view-pill" onclick="setManagerView('charts')">📈 גרפים</button>
       </div>
     </div>
     <div id="manager-content"></div>
@@ -489,6 +503,8 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
 </div>
 
 <div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
 <!-- ═════════════════════════════════════════════════════════ -->
 <!-- JAVASCRIPT                                                -->
@@ -857,6 +873,7 @@ function renderCurrentSection(){
     case 'units-section': renderUnitsSection(); break;
     case 'manager-section':
       if(managerView==='matrix') renderManagerMatrix();
+      else if(managerView==='charts') renderManagerCharts();
       else renderManagerSection();
       break;
   }
@@ -1702,7 +1719,8 @@ function setManagerView(view){
   document.querySelectorAll('#manager-section .view-pill').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('#manager-section .view-pill').forEach(p=>{
     if((view==='list'&&p.textContent.includes('רשימה'))||
-       (view==='matrix'&&p.textContent.includes('מטריצה'))) p.classList.add('active');
+       (view==='matrix'&&p.textContent.includes('מטריצה'))||
+       (view==='charts'&&p.textContent.includes('גרפים'))) p.classList.add('active');
   });
   renderCurrentSection();
 }
@@ -1767,6 +1785,242 @@ function renderManagerMatrix(){
   </div>`;
 
   el.innerHTML = statusHTML + tableHTML;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHARTS VIEW
+// ═══════════════════════════════════════════════════════════
+let chartInstances = [];
+
+function destroyCharts(){
+  chartInstances.forEach(c=>{ try{ c.destroy(); }catch(e){} });
+  chartInstances = [];
+}
+
+function renderManagerCharts(){
+  destroyCharts();
+  const el = document.getElementById('manager-content');
+  const units = config.units || [];
+  const efforts = config.efforts || [];
+  const plans = currentPlans;
+  const unitNames = units.map(u=>u.name);
+  const effortColors = ['#66bb6a','#ffa726','#42a5f5','#ef5350','#ab47bc','#26c6da'];
+
+  // ── Build data structures ──
+  const unitStats = {}; // unitName → {done, partial, notDone, noStatus, total}
+  const unitEffortItems = {}; // unitName → effortName → total item count (all days)
+  const unitEffortDays = {}; // unitName → effortName → count of days with content
+
+  units.forEach(u => {
+    unitStats[u.name] = {done:0, partial:0, notDone:0, noStatus:0, total:0};
+    unitEffortItems[u.name] = {};
+    unitEffortDays[u.name] = {};
+    efforts.forEach(eff => {
+      unitEffortItems[u.name][eff.name] = 0;
+      unitEffortDays[u.name][eff.name] = 0;
+    });
+  });
+
+  plans.forEach(p => {
+    if(p.rowType !== 'effort') return;
+    const lines = p.content.split(/\n/).filter(s=>s.trim());
+    if(!lines.length) return;
+
+    // Unit completion stats
+    if(unitStats[p.unit]){
+      const statuses = parseLineStatuses(p.status, lines.length);
+      statuses.forEach(s => {
+        unitStats[p.unit].total++;
+        if(s==='done') unitStats[p.unit].done++;
+        else if(s==='partial') unitStats[p.unit].partial++;
+        else if(s==='not-done') unitStats[p.unit].notDone++;
+        else unitStats[p.unit].noStatus++;
+      });
+    }
+
+    // Per-unit effort items (for chart 2)
+    if(unitEffortItems[p.unit] && unitEffortItems[p.unit][p.rowName] !== undefined){
+      unitEffortItems[p.unit][p.rowName] += lines.length;
+    }
+
+    // Radar: count days per effort per unit
+    if(unitEffortDays[p.unit] && unitEffortDays[p.unit][p.rowName] !== undefined){
+      unitEffortDays[p.unit][p.rowName]++;
+    }
+  });
+
+  // ── Radar canvases HTML (9 small charts) ──
+  const radarCanvases = unitNames.map((name, i) =>
+    `<div class="radar-grid-item">
+      <div class="radar-label" style="color:${getUnitColor(name)}">${esc(name)}</div>
+      <canvas id="chart-radar-${i}"></canvas>
+    </div>`
+  ).join('');
+
+  const effortLabels = efforts.map(e => e.name);
+  const weekStr = esc(currentWeek);
+
+  // ── HTML shell (reordered: comparison → efforts → completion → radar) ──
+  el.innerHTML = `
+    <div class="charts-container">
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="icon">📋</span><span class="title">פוקוס מאמצים כלל נפתי — שבוע ${weekStr}</span></div>
+        <div class="chart-card-body"><canvas id="chart-effort-comparison"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="icon">🎯</span><span class="title">פילוג מאמצים לפי יקל"ר — שבוע ${weekStr}</span></div>
+        <div class="chart-card-body"><canvas id="chart-unit-efforts"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="icon">📊</span><span class="title">סטטוס ביצוע לפי יקל"ר — שבוע ${weekStr}</span></div>
+        <div class="chart-card-body"><canvas id="chart-completion"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header"><span class="icon">🕸️</span><span class="title">כיסוי מאמצים לפי יקל"ר — שבוע ${weekStr}</span></div>
+        <div class="chart-card-body">
+          <div class="radar-grid">${radarCanvases}</div>
+        </div>
+      </div>
+    </div>`;
+
+  // ── Chart 1 (top): Effort Comparison — Grouped Bar (efforts on X, side-by-side units) ──
+  const comparisonCtx = document.getElementById('chart-effort-comparison').getContext('2d');
+  const chart1 = new Chart(comparisonCtx, {
+    type: 'bar',
+    data: {
+      labels: effortLabels,
+      datasets: unitNames.map((name, i) => ({
+        label: name,
+        data: effortLabels.map(eff => unitEffortItems[name][eff] || 0),
+        backgroundColor: UNIT_COLORS[i % UNIT_COLORS.length] + 'CC',
+        borderColor: UNIT_COLORS[i % UNIT_COLORS.length],
+        borderWidth: 1,
+        borderRadius: 2
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 11 }, usePointStyle: true, pointStyle: 'rectRounded' } }
+      },
+      scales: {
+        x: { ticks: { font: { size: 12, weight: 'bold' } } },
+        y: { beginAtZero: true, title: { display: true, text: 'מספר משימות שבועי', font: { size: 12 } }, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+  chart1.canvas.parentElement.style.height = '380px';
+  chart1.resize();
+  chartInstances.push(chart1);
+
+  // ── Chart 2: Per-Unit Effort Stacked Bar (units on X, stacked by effort) ──
+  const unitEffortsCtx = document.getElementById('chart-unit-efforts').getContext('2d');
+  const chart2 = new Chart(unitEffortsCtx, {
+    type: 'bar',
+    data: {
+      labels: unitNames,
+      datasets: efforts.map((eff, i) => ({
+        label: eff.name,
+        data: unitNames.map(name => unitEffortItems[name][eff.name] || 0),
+        backgroundColor: effortColors[i % effortColors.length],
+        borderRadius: 2
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 12 }, usePointStyle: true, pointStyle: 'rectRounded' } }
+      },
+      scales: {
+        x: { stacked: true, ticks: { font: { size: 11, weight: 'bold' }, maxRotation: 45 } },
+        y: { stacked: true, beginAtZero: true, title: { display: true, text: 'מספר משימות שבועי', font: { size: 12 } }, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+  chart2.canvas.parentElement.style.height = '320px';
+  chart2.resize();
+  chartInstances.push(chart2);
+
+  // ── Chart 3: Unit Completion Horizontal Bar ──
+  const completionCtx = document.getElementById('chart-completion').getContext('2d');
+  const chart3 = new Chart(completionCtx, {
+    type: 'bar',
+    data: {
+      labels: unitNames,
+      datasets: [
+        { label: 'בוצע', data: unitNames.map(n=>unitStats[n].done), backgroundColor: '#66bb6a', borderRadius: 2 },
+        { label: 'בוצע חלקית', data: unitNames.map(n=>unitStats[n].partial), backgroundColor: '#ffc107', borderRadius: 2 },
+        { label: 'לא בוצע', data: unitNames.map(n=>unitStats[n].notDone), backgroundColor: '#ef5350', borderRadius: 2 },
+        { label: 'ממתין', data: unitNames.map(n=>unitStats[n].noStatus), backgroundColor: '#e0e0e0', borderRadius: 2 }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 12 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+        tooltip: {
+          callbacks: {
+            afterBody: function(items){
+              const unitName = items[0].label;
+              const s = unitStats[unitName];
+              if(!s || !s.total) return '';
+              const pct = Math.round((s.done / s.total) * 100);
+              return `\nסה"כ: ${s.total} | ביצוע: ${pct}%`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, title: { display: true, text: 'מספר משימות שבועי', font: { size: 12 } }, ticks: { stepSize: 1 } },
+        y: { stacked: true, ticks: { font: { size: 12, weight: 'bold' } } }
+      }
+    }
+  });
+  chart3.canvas.parentElement.style.height = Math.max(250, units.length * 40) + 'px';
+  chart3.resize();
+  chartInstances.push(chart3);
+
+  // ── Chart 4: Small Radar per Unit (3×3 grid, each scaled to its own max) ──
+  unitNames.forEach((name, i) => {
+    const canvas = document.getElementById('chart-radar-' + i);
+    if(!canvas) return;
+    const color = getUnitColor(name);
+    const unitData = effortLabels.map(eff => unitEffortItems[name] ? (unitEffortItems[name][eff] || 0) : 0);
+    const unitMax = Math.max(1, ...unitData);
+    const radarChart = new Chart(canvas.getContext('2d'), {
+      type: 'radar',
+      data: {
+        labels: effortLabels,
+        datasets: [{
+          label: name,
+          data: unitData,
+          borderColor: color,
+          backgroundColor: color + '30',
+          pointBackgroundColor: color,
+          pointRadius: 3,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: unitMax,
+            ticks: { stepSize: 1, font: { size: 9 }, display: false },
+            pointLabels: { font: { size: 10 } }
+          }
+        }
+      }
+    });
+    chartInstances.push(radarChart);
+  });
 }
 
 const UNIT_COLORS = ['#e74c3c','#2e86de','#222222','#6bcb77','#6b8e23','#8e44ad','#00d2d3','#8B4513','#888888'];
