@@ -2423,10 +2423,10 @@ async function renderStaffMatrix(){
 
       let cellHTML = '';
       if(boker.length){
-        cellHTML += `<div style="margin-bottom:4px"><span class="shift-label-tag boker">☀️ בוקר</span><div style="font-size:11px;color:#333">${esc(boker.map(p=>p.content).join(', '))}</div></div>`;
+        cellHTML += `<div style="margin-bottom:4px"><span class="shift-label-tag boker">☀️ בוקר</span><div style="font-size:11px;color:#333;white-space:pre-line">${esc(boker.map(p=>p.content).join(', '))}</div></div>`;
       }
       if(erev.length){
-        cellHTML += `<div><span class="shift-label-tag erev">🌙 ערב</span><div style="font-size:11px;color:#333">${esc(erev.map(p=>p.content).join(', '))}</div></div>`;
+        cellHTML += `<div><span class="shift-label-tag erev">🌙 ערב</span><div style="font-size:11px;color:#333;white-space:pre-line">${esc(erev.map(p=>p.content).join(', '))}</div></div>`;
       }
       return `<td>${cellHTML}</td>`;
     }).join('');
