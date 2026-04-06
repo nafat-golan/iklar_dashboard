@@ -1064,6 +1064,7 @@ function switchSection(id){
   const weekBar = document.getElementById('week-bar');
   const hideWeekBar = id==='form-section'||id==='followup-section'||id==='settings-section'||(id==='staff-section'&&staffView==='submit');
   weekBar.style.display = hideWeekBar ? 'none' : 'flex';
+  if(!hideWeekBar) buildWeekChips();
   // Hide sticky buttons when leaving their sections
   document.getElementById('sticky-submit').classList.remove('visible');
   document.getElementById('sticky-followup').classList.remove('visible');
@@ -1089,11 +1090,15 @@ function buildWeekChips(){
   el.innerHTML = '';
   const totalUnits = config.units?.length || 9;
   const totalDepts = config.departments?.length || 8;
+  const isStaff = currentSection === 'staff-section';
   allWeeks.forEach(w => {
     const opt = document.createElement('option');
     opt.value = w.label;
-    const deptPart = w.deptCount!=null ? ' | ' + (w.deptCount||0) + '/' + totalDepts + ' מכלולים' : '';
-    opt.textContent = w.label + ' (' + (w.unitCount||0) + '/' + totalUnits + ' יחידות' + deptPart + ')';
+    if(isStaff){
+      opt.textContent = w.label + ' (' + (w.deptCount||0) + '/' + totalDepts + ' מכלולים)';
+    } else {
+      opt.textContent = w.label + ' (' + (w.unitCount||0) + '/' + totalUnits + ' יחידות)';
+    }
     if(w.label === currentWeek) opt.selected = true;
     el.appendChild(opt);
   });
