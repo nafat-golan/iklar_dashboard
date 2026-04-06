@@ -390,7 +390,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
     <h2>דשבורד יקל"ר</h2>
     <p>הזן קוד גישה כדי להיכנס</p>
     <div style="display:flex;gap:8px;justify-content:center">
-      <button class="btn btn-primary" onclick="checkGateCode()">כניסה</button>
+      <button class="btn btn-primary" id="gate-btn" onclick="checkGateCode()">כניסה</button>
       <input type="password" id="gate-input" class="gate-input" placeholder="קוד גישה" autocomplete="off">
     </div>
     <div class="gate-error" id="gate-error"></div>
@@ -647,7 +647,12 @@ const GATE_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
 async function checkGateCode(){
   const input = document.getElementById('gate-input').value.trim();
   const errEl = document.getElementById('gate-error');
+  const btn = document.getElementById('gate-btn');
+  const inp = document.getElementById('gate-input');
   errEl.textContent = '';
+  btn.disabled = true;
+  btn.textContent = '...טוען';
+  inp.disabled = true;
   try{
     const res = await apiGet({action:'validateGate', code:input});
     if(res.valid){
@@ -659,6 +664,10 @@ async function checkGateCode(){
     }
   }catch(e){
     errEl.textContent = 'שגיאת תקשורת – נסה שוב';
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'כניסה';
+    inp.disabled = false;
   }
 }
 document.getElementById('gate-input').addEventListener('keydown', function(e){
@@ -2345,7 +2354,7 @@ window.addEventListener('scroll', function(){
 // STAFF SHIFTS SECTION
 // ═══════════════════════════════════════════════════════════
 
-const DEPT_COLORS = ['#e74c3c','#2e86de','#27ae60','#8e44ad','#e67e22','#16a085','#c0392b','#2c3e50'];
+const DEPT_COLORS = ['#e74c3c','#e91e90','#27ae60','#8e44ad','#e67e22','#16a085','#c0392b','#2c3e50'];
 function getDeptColor(name){
   const depts = config.departments || [];
   const idx = depts.findIndex(d=>d.name===name);

@@ -128,6 +128,7 @@ function getConfig() {
     if (col0 === '---') {
       if (section === 'units') section = 'efforts';
       else if (section === 'efforts') section = 'departments';
+      else if (section === 'departments') break; // secrets section — stop
       continue;
     }
 
