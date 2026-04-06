@@ -640,19 +640,25 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
 // │ Replace this URL with your deployed Apps Script web app   │
 // └──────────────────────────────────────────────────────────┘
 // ─── Access Gate ───────────────────────────────────────────
-const GATE_CODE = 'iklar2026';
 const STORAGE_KEY_GATE = 'iklar_gate_ok';
 
 const GATE_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
 
-function checkGateCode(){
+async function checkGateCode(){
   const input = document.getElementById('gate-input').value.trim();
-  if(input === GATE_CODE){
-    localStorage.setItem(STORAGE_KEY_GATE, String(Date.now()));
-    document.getElementById('access-gate').classList.add('hidden');
-    init();
-  } else {
-    document.getElementById('gate-error').textContent = 'קוד גישה שגוי';
+  const errEl = document.getElementById('gate-error');
+  errEl.textContent = '';
+  try{
+    const res = await apiGet({action:'validateGate', code:input});
+    if(res.valid){
+      localStorage.setItem(STORAGE_KEY_GATE, String(Date.now()));
+      document.getElementById('access-gate').classList.add('hidden');
+      init();
+    } else {
+      errEl.textContent = 'קוד גישה שגוי';
+    }
+  }catch(e){
+    errEl.textContent = 'שגיאת תקשורת – נסה שוב';
   }
 }
 document.getElementById('gate-input').addEventListener('keydown', function(e){
@@ -820,6 +826,7 @@ async function apiGet(params){
       case 'plans': return getDemoPlans(params.week||currentWeek);
       case 'validate': return demoValidateKey(params.key);
       case 'validateDept': return demoValidateDeptKey(params.key);
+      case 'validateGate': return {valid: params.code==='demo'};
     }
     return {};
   }
@@ -836,7 +843,7 @@ async function apiPost(body){
       return {success:true,unit:followupUnit,week:body.week,updated:body.data?body.data.length:0};
     }
     if(body.action==='validateAdmin'){
-      return {valid: body.password==='admin2026'};
+      return {valid: body.password==='demo'};
     }
     if(body.action==='addEffort'){
       config.efforts.push({name:body.name,desc:body.desc,icon:body.icon});

@@ -7,7 +7,24 @@
 
 const PLANS_SHEET = 'plans';
 const CONFIG_SHEET = 'config';
-const ADMIN_PASSWORD = 'admin2026';
+
+// ─── Read secret from config sheet (after 3rd --- separator) ───
+function getSecret(name) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ws = ss.getSheetByName(CONFIG_SHEET);
+  if (!ws) return '';
+  const data = ws.getDataRange().getValues();
+  let separatorCount = 0;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0] || '').trim() === '---') { separatorCount++; continue; }
+    if (separatorCount >= 3) {
+      if (String(data[i][0] || '').trim() === name) {
+        return String(data[i][1] || '').trim();
+      }
+    }
+  }
+  return '';
+}
 
 // ─── GET Handler ───────────────────────────────────────────
 function doGet(e) {
@@ -30,6 +47,9 @@ function doGet(e) {
         break;
       case 'validateDept':
         result = validateDeptKey(e.parameter.key || '');
+        break;
+      case 'validateGate':
+        result = validateGateCode(e.parameter.code || '');
         break;
       default:
         result = { error: 'Unknown action: ' + action };
@@ -125,6 +145,13 @@ function getConfig() {
   }
 
   return { units, efforts, departments };
+}
+
+// ─── Validate Gate Code ──────────────────────────────────
+function validateGateCode(code) {
+  if (!code) return { valid: false };
+  const gateCode = getSecret('gate_code');
+  return { valid: code === gateCode };
 }
 
 // ─── Validate Key ──────────────────────────────────────────
@@ -351,12 +378,13 @@ function submitFollowup(body) {
 // ─── Validate Admin Password ───────────────────────────────
 function validateAdmin(body) {
   const password = String(body.password || '').trim();
-  return { valid: password === ADMIN_PASSWORD };
+  const adminPw = getSecret('admin_password');
+  return { valid: password === adminPw };
 }
 
-// ─── Add Effort ────────────────────────────────────────────
+// ─── Add Effort ────────────────────────────────────────
 function addEffort(body) {
-  if (String(body.password || '') !== ADMIN_PASSWORD) return { error: 'Unauthorized' };
+  if (String(body.password || '') !== getSecret('admin_password')) return { error: 'Unauthorized' };
 
   const name = String(body.name || '').trim();
   const desc = String(body.desc || '').trim();
@@ -395,7 +423,7 @@ function addEffort(body) {
 
 // ─── Update Effort ─────────────────────────────────────────
 function updateEffort(body) {
-  if (String(body.password || '') !== ADMIN_PASSWORD) return { error: 'Unauthorized' };
+  if (String(body.password || '') !== getSecret('admin_password')) return { error: 'Unauthorized' };
 
   const oldName = String(body.oldName || '').trim();
   const newName = String(body.newName || '').trim();
@@ -440,7 +468,7 @@ function updateEffort(body) {
 
 // ─── Remove Effort ─────────────────────────────────────────
 function removeEffort(body) {
-  if (String(body.password || '') !== ADMIN_PASSWORD) return { error: 'Unauthorized' };
+  if (String(body.password || '') !== getSecret('admin_password')) return { error: 'Unauthorized' };
 
   const name = String(body.name || '').trim();
   if (!name) return { error: 'Missing effort name' };
@@ -465,7 +493,7 @@ function removeEffort(body) {
 
 // ─── Reorder Efforts ───────────────────────────────────────
 function reorderEfforts(body) {
-  if (String(body.password || '') !== ADMIN_PASSWORD) return { error: 'Unauthorized' };
+  if (String(body.password || '') !== getSecret('admin_password')) return { error: 'Unauthorized' };
 
   const order = body.order; // array of effort names in desired order
   if (!order || !Array.isArray(order)) return { error: 'Missing order array' };
@@ -568,6 +596,9 @@ function setupSheets() {
   cfg.appendRow(['משא"ן', 'mashan6', '']);
   cfg.appendRow(['מודיעין', 'modin7', '']);
   cfg.appendRow(['אוכלוסיה', 'ukhlusiya8', '']);
+  cfg.appendRow(['---', '', '']);
+  cfg.appendRow(['gate_code', 'iklar2026', '']);
+  cfg.appendRow(['admin_password', 'admin2026', '']);
 
   // Plans sheet
   let plans = ss.getSheetByName(PLANS_SHEET);
