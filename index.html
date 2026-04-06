@@ -358,6 +358,21 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
 .emoji-opt:hover{background:#f7f3ea;border-color:#c9a227}
 .emoji-opt.selected{background:#2d3d1e;border-color:#2d3d1e}
 .effort-form-actions{display:flex;gap:8px;margin-top:8px}
+
+/* ─── Staff Shifts Section ──────────────────────────────── */
+.staff-login{max-width:400px;margin:40px auto;text-align:center}
+.staff-login h2{font-size:22px;color:#2d3d1e;margin-bottom:8px}
+.staff-login p{font-size:14px;color:#888;margin-bottom:20px}
+.staff-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.staff-header h2{font-size:20px;color:#2d3d1e}
+.staff-view-toggle{display:flex;gap:8px;margin-bottom:16px}
+.dept-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.dept-tab{background:#fff;border:1.5px solid #bfb090;color:#2d3d1e;padding:7px 17px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .17s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.dept-tab:hover{background:#ede5cc}
+.dept-tab.active{background:#2d3d1e;color:#fff;border-color:#2d3d1e}
+.dept-tab .dot{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
+.dept-tab.has-data .dot{background:#7ccc80}
+.dept-tab.active .dot{background:#c9a227}
 </style>
 </head>
 <body class="is-loading">
@@ -401,6 +416,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
   <button class="nav-btn" data-section="followup-section" onclick="switchSection('followup-section')">✅ מעקב ביצוע</button>
   <button class="nav-btn" data-section="units-section" onclick="switchSection('units-section')">👁️ תצוגת יחידות</button>
   <button class="nav-btn active" data-section="manager-section" onclick="switchSection('manager-section')">📊 תצוגת מנהל</button>
+  <button class="nav-btn" data-section="staff-section" onclick="switchSection('staff-section')">🏢 משמרות מכלולים</button>
   <button class="nav-btn" data-section="settings-section" onclick="switchSection('settings-section')">⚙️ הגדרות</button>
 </div>
 
@@ -531,6 +547,56 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
     <div id="manager-content"></div>
   </div>
 
+  <!-- ── STAFF SHIFTS SECTION ──────────────────────────── -->
+  <div id="staff-section" class="section">
+    <div class="view-bar" style="margin-bottom:16px">
+      <div class="view-toggle">
+        <button class="view-pill active" onclick="setStaffView('matrix')">📊 תצוגת משמרות</button>
+        <button class="view-pill" onclick="setStaffView('submit')">📝 הגשת משמרות</button>
+      </div>
+    </div>
+
+    <!-- Staff matrix (manager view) — default -->
+    <div id="staff-matrix-view">
+      <div id="staff-matrix-content"></div>
+    </div>
+
+    <!-- Staff submit (per-department login) -->
+    <div id="staff-submit-view" style="display:none">
+      <!-- Login step -->
+      <div id="staff-login" class="staff-login">
+        <h2>🏢 הגשת משמרת מכלול</h2>
+        <p>הזן את קוד המכלול שלך כדי להתחיל</p>
+        <div class="key-input-wrap">
+          <button class="btn btn-primary" onclick="validateStaffKey()">כניסה</button>
+          <input type="text" id="staff-key-input" class="key-input" placeholder="קוד מכלול" autocomplete="off">
+        </div>
+        <div id="staff-key-error" style="color:#c0392b;font-size:13px;margin-top:10px"></div>
+      </div>
+
+      <!-- Submit form -->
+      <div id="staff-form-main" style="display:none">
+        <div class="staff-header">
+          <div>
+            <h2>🏢 משמרות שבועיות</h2>
+            <span class="form-unit-badge" id="staff-dept-name"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <select class="form-week-select" id="staff-week-select" onchange="onStaffWeekChange()"></select>
+            <button class="btn btn-outline" onclick="logoutStaff()">החלף מכלול</button>
+          </div>
+        </div>
+
+        <div id="staff-form-days"></div>
+
+        <div class="form-actions">
+          <button class="btn btn-success" onclick="submitStaffForm()" id="staff-submit-btn">💾 שלח משמרות</button>
+          <div class="submit-status" id="staff-submit-status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── SETTINGS SECTION ──────────────────────────────── -->
   <div id="settings-section" class="section">
     <!-- Admin login step -->
@@ -657,6 +723,10 @@ let followupUnit = '';
 let followupKey = '';
 let settingsPassword = '';
 let settingsAuthed = false;
+let staffView = 'matrix';
+let staffDept = '';
+let staffKey = '';
+let staffWeek = '';
 
 // ─── Demo Data ─────────────────────────────────────────────
 function getDemoConfig(){
@@ -673,6 +743,10 @@ function getDemoConfig(){
       {name:'זמן יקר יקל"ר',desc:'אימון פנים יקל"ר',icon:'🎯'},
       {name:'קשר עם הרשות',desc:'סיור רשות, הע"מ רשות, הדרכות מכלולים, סע"ר',icon:'🤝'},
       {name:'תיאום בעלי תפקידים מהנפה',desc:'נמרוד, מירב, מיגון, קה"א נפה, חפ"ק אלפ"א, מפקד נפה, קנ"ר',icon:'📞'}
+    ],
+    departments:[
+      {name:'אג"ם'},{name:'תקשוב'},{name:'רפואה'},{name:'תכנון'},
+      {name:'מלכ"א'},{name:'משא"ן'},{name:'מודיעין'},{name:'אוכלוסיה'}
     ]
   };
 }
@@ -704,6 +778,19 @@ function getDemoPlans(week){
       });
     });
   });
+
+  // Demo staff shifts
+  const depts = ['אג"ם','תקשוב','רפואה','תכנון'];
+  const staffNames = [['רס"ן כהן','סרן לוי'],['רס"ן דוד','סרן אבי'],['רס"ן רחל','סרן יעל'],['רס"ן משה','סרן נועם']];
+  depts.forEach((dept,di) => {
+    DAYS.slice(0,6).forEach((day,dayIdx) => {
+      if(dayIdx % 2 === 0 || di < 2){
+        plans.push({week,unit:dept,day,rowType:'staff-shift',rowName:'בוקר',content:staffNames[di][0],timestamp:'',status:'',followupNote:'',followupTs:''});
+        plans.push({week,unit:dept,day,rowType:'staff-shift',rowName:'ערב',content:staffNames[di][1],timestamp:'',status:'',followupNote:'',followupTs:''});
+      }
+    });
+  });
+
   return {plans};
 }
 
@@ -716,6 +803,14 @@ function demoValidateKey(key){
   return map[key] ? {valid:true,unit:map[key]} : {valid:false};
 }
 
+function demoValidateDeptKey(key){
+  const map = {
+    'agam1':'אג"ם','tikshov2':'תקשוב','refua3':'רפואה','tichnun4':'תכנון',
+    'malka5':'מלכ"א','mashan6':'משא"ן','modin7':'מודיעין','ukhlusiya8':'אוכלוסיה'
+  };
+  return map[key] ? {valid:true,dept:map[key]} : {valid:false};
+}
+
 // ─── API Helpers ───────────────────────────────────────────
 async function apiGet(params){
   if(DEMO_MODE){
@@ -724,6 +819,7 @@ async function apiGet(params){
       case 'weeks': return getDemoWeeks();
       case 'plans': return getDemoPlans(params.week||currentWeek);
       case 'validate': return demoValidateKey(params.key);
+      case 'validateDept': return demoValidateDeptKey(params.key);
     }
     return {};
   }
@@ -948,9 +1044,10 @@ function switchSection(id){
   document.querySelectorAll('.nav-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.section===id);
   });
-  // Hide global week bar on form/followup/settings sections
+  // Hide global week bar on form/followup/settings sections, and staff submit
   const weekBar = document.getElementById('week-bar');
-  weekBar.style.display = (id==='form-section'||id==='followup-section'||id==='settings-section') ? 'none' : 'flex';
+  const hideWeekBar = id==='form-section'||id==='followup-section'||id==='settings-section'||(id==='staff-section'&&staffView==='submit');
+  weekBar.style.display = hideWeekBar ? 'none' : 'flex';
   // Hide sticky buttons when leaving their sections
   document.getElementById('sticky-submit').classList.remove('visible');
   document.getElementById('sticky-followup').classList.remove('visible');
@@ -966,6 +1063,7 @@ function renderCurrentSection(){
       else renderManagerSection();
       break;
     case 'settings-section': renderSettingsEffortList(); break;
+    case 'staff-section': renderStaffSection(); break;
   }
 }
 
@@ -2235,6 +2333,269 @@ window.addEventListener('scroll', function(){
     }
   }
 }, {passive:true});
+
+// ═══════════════════════════════════════════════════════════
+// STAFF SHIFTS SECTION
+// ═══════════════════════════════════════════════════════════
+
+const DEPT_COLORS = ['#e74c3c','#2e86de','#27ae60','#8e44ad','#e67e22','#16a085','#c0392b','#2c3e50'];
+function getDeptColor(name){
+  const depts = config.departments || [];
+  const idx = depts.findIndex(d=>d.name===name);
+  return DEPT_COLORS[idx>=0?idx%DEPT_COLORS.length:0];
+}
+
+document.getElementById('staff-key-input').addEventListener('keydown', function(e){
+  if(e.key==='Enter') validateStaffKey();
+});
+
+function setStaffView(view){
+  staffView = view;
+  document.querySelectorAll('#staff-section .view-pill').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#staff-section .view-pill').forEach(p=>{
+    if((view==='matrix'&&p.textContent.includes('תצוגת'))||
+       (view==='submit'&&p.textContent.includes('הגשת'))) p.classList.add('active');
+  });
+  document.getElementById('staff-matrix-view').style.display = view==='matrix'?'block':'none';
+  document.getElementById('staff-submit-view').style.display = view==='submit'?'block':'none';
+  // Show week bar for matrix, hide for submit
+  document.getElementById('week-bar').style.display = view==='matrix'?'flex':'none';
+  if(view==='matrix') renderStaffMatrix();
+}
+
+function renderStaffSection(){
+  if(staffView==='matrix') renderStaffMatrix();
+}
+
+async function renderStaffMatrix(){
+  const el = document.getElementById('staff-matrix-content');
+  const depts = config.departments || [];
+  if(!depts.length){
+    el.innerHTML = '<p class="no-data">לא הוגדרו מכלולים</p>';
+    return;
+  }
+
+  // Use the current global week
+  const week = currentWeek || getCurrentWeekLabel();
+  const dates = getWeekDates(week);
+
+  // Get staff plans
+  const staffPlans = currentPlans.filter(p=>p.rowType==='staff-shift');
+  const submittedDepts = new Set(staffPlans.map(p=>p.unit));
+
+  // Status chips
+  let statusHTML = '<h3 style="font-size:16px;color:#2d3d1e;margin-bottom:10px">סטטוס משמרות מכלולים — שבוע '+esc(week)+'</h3>';
+  statusHTML += '<div class="dept-tabs">';
+  depts.forEach(d => {
+    const submitted = submittedDepts.has(d.name);
+    statusHTML += `<span class="dept-tab${submitted?' has-data':''}" style="cursor:default"><span class="dot"></span>${submitted?'✅':'⏳'} ${esc(d.name)}</span>`;
+  });
+  statusHTML += '</div>';
+
+  // Build matrix: departments (rows) × days (columns), morning+evening
+  const thCols = DAYS.map((d,i) =>
+    `<th><span class="day-he">${esc(d)}</span><span class="day-dt">${esc(dates[i]||'')}</span></th>`
+  ).join('');
+
+  const rows = depts.map(dept => {
+    const deptColor = getDeptColor(dept.name);
+    const label = `<td><div class="matrix-row-label"><span class="matrix-row-name" style="border-right:3px solid ${deptColor};padding-right:8px">${esc(dept.name)}</span></div></td>`;
+    const cells = DAYS.map(day => {
+      const boker = staffPlans.filter(p=>p.unit===dept.name&&p.day===day&&p.rowName==='בוקר');
+      const erev = staffPlans.filter(p=>p.unit===dept.name&&p.day===day&&p.rowName==='ערב');
+      if(!boker.length && !erev.length) return '<td><div class="matrix-empty">—</div></td>';
+
+      let cellHTML = '';
+      if(boker.length){
+        cellHTML += `<div style="margin-bottom:4px"><span class="shift-label-tag boker">☀️ בוקר</span><div style="font-size:11px;color:#333">${esc(boker.map(p=>p.content).join(', '))}</div></div>`;
+      }
+      if(erev.length){
+        cellHTML += `<div><span class="shift-label-tag erev">🌙 ערב</span><div style="font-size:11px;color:#333">${esc(erev.map(p=>p.content).join(', '))}</div></div>`;
+      }
+      return `<td>${cellHTML}</td>`;
+    }).join('');
+    return `<tr>${label}${cells}</tr>`;
+  }).join('');
+
+  el.innerHTML = statusHTML + `<div class="matrix-wrap">
+    <table class="matrix"><thead><tr><th>מכלול / יום</th>${thCols}</tr></thead>
+    <tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+// ── Staff Submit ───────────────────────────────────────────
+async function validateStaffKey(){
+  const key = document.getElementById('staff-key-input').value.trim();
+  if(!key){
+    document.getElementById('staff-key-error').textContent = 'נא להזין קוד מכלול';
+    return;
+  }
+  document.getElementById('staff-key-error').textContent = '';
+
+  showLoader();
+  try{
+    const res = await apiGet({action:'validateDept',key});
+    if(res.valid){
+      staffKey = key;
+      staffDept = res.dept;
+      showStaffForm();
+    } else {
+      document.getElementById('staff-key-error').textContent = 'קוד מכלול לא תקין';
+    }
+  }finally{ hideLoader(); }
+}
+
+function logoutStaff(){
+  staffKey = '';
+  staffDept = '';
+  document.getElementById('staff-login').style.display = 'block';
+  document.getElementById('staff-form-main').style.display = 'none';
+}
+
+function showStaffForm(){
+  document.getElementById('staff-login').style.display = 'none';
+  document.getElementById('staff-form-main').style.display = 'block';
+  document.getElementById('staff-dept-name').textContent = staffDept;
+
+  // Build week selector
+  const sel = document.getElementById('staff-week-select');
+  sel.innerHTML = '';
+  const cur = getCurrentWeekLabel();
+  const next = getNextWeekLabel();
+  sel.innerHTML += `<option value="${esc(next)}">${esc(next)} (שבוע הבא)</option>`;
+  sel.innerHTML += `<option value="${esc(cur)}">${esc(cur)} (שבוע נוכחי)</option>`;
+  allWeeks.forEach(w => {
+    if(w.label !== cur && w.label !== next){
+      sel.innerHTML += `<option value="${esc(w.label)}">${esc(w.label)}</option>`;
+    }
+  });
+
+  staffWeek = sel.value;
+  buildStaffFormDays();
+  loadExistingStaffData();
+}
+
+function onStaffWeekChange(){
+  staffWeek = document.getElementById('staff-week-select').value;
+  buildStaffFormDays();
+  loadExistingStaffData();
+}
+
+function buildStaffFormDays(){
+  const container = document.getElementById('staff-form-days');
+  container.innerHTML = '';
+  const weekLabel = document.getElementById('staff-week-select').value;
+  const dates = getWeekDates(weekLabel);
+
+  const section = document.createElement('div');
+  section.className = 'day-section';
+  section.innerHTML = `
+    <div class="day-header open" onclick="toggleDay(this)">
+      <div class="day-title"><span>👥 משמרות ${esc(staffDept)}</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="filled-count" data-staff-count="shifts"></span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <div class="effort-days-grid">
+        ${DAYS.map((dayName, di) => {
+          const date = dates[di] || '';
+          return `
+          <div class="effort-day-cell">
+            <div class="effort-day-label">📅 ${esc(dayName)} <span class="day-date">${esc(date)}</span></div>
+            <div class="shift-fields">
+              <div class="shift-field">
+                <div class="shift-label boker">☀️ בוקר</div>
+                <textarea class="field-textarea" data-day="${dayName}" data-type="staff-shift" data-name="בוקר" placeholder="תורן בוקר..." rows="2"></textarea>
+              </div>
+              <div class="shift-field">
+                <div class="shift-label erev">🌙 ערב</div>
+                <textarea class="field-textarea" data-day="${dayName}" data-type="staff-shift" data-name="ערב" placeholder="תורן ערב..." rows="2"></textarea>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  container.appendChild(section);
+}
+
+async function loadExistingStaffData(){
+  const weekLabel = document.getElementById('staff-week-select').value;
+  showLoader();
+  try{
+    const res = await apiGet({action:'plans',week:weekLabel});
+    const plans = (res.plans||[]).filter(p=>p.unit===staffDept && p.rowType==='staff-shift');
+
+    document.querySelectorAll('#staff-form-days .field-textarea').forEach(ta => {
+      const day = ta.dataset.day;
+      const name = ta.dataset.name;
+      const match = plans.find(p=>p.day===day && p.rowName===name);
+      ta.value = match ? match.content : '';
+    });
+
+    updateStaffFilledCount();
+  }finally{ hideLoader(); }
+}
+
+function updateStaffFilledCount(){
+  const fields = document.querySelectorAll('#staff-form-days .field-textarea');
+  let filled = 0;
+  fields.forEach(f => { if(f.value.trim()) filled++; });
+  const el = document.querySelector('[data-staff-count="shifts"]');
+  if(el) el.textContent = filled > 0 ? `${filled}/${fields.length}` : '';
+}
+
+document.getElementById('staff-form-days')?.addEventListener('input', function(e){
+  if(e.target.classList.contains('field-textarea')) updateStaffFilledCount();
+});
+
+async function submitStaffForm(){
+  const weekLabel = document.getElementById('staff-week-select').value;
+  const btn = document.getElementById('staff-submit-btn');
+  const status = document.getElementById('staff-submit-status');
+
+  btn.disabled = true;
+  status.textContent = 'שולח...';
+  status.className = 'submit-status';
+
+  const rows = [];
+  document.querySelectorAll('#staff-form-days .field-textarea').forEach(ta => {
+    const content = ta.value.trim();
+    if(content){
+      rows.push({
+        day: ta.dataset.day,
+        rowType: ta.dataset.type,
+        rowName: ta.dataset.name,
+        content: content
+      });
+    }
+  });
+
+  // Use the same submit endpoint — the unit field will be the department name
+  const res = await apiPost({
+    action:'submit',
+    key: staffKey,
+    week: weekLabel,
+    data: rows
+  });
+
+  btn.disabled = false;
+
+  if(res.success){
+    status.textContent = '✅ המשמרות הוגשו בהצלחה! ('+res.rowCount+' שדות)';
+    status.className = 'submit-status success';
+    showToast('✅ משמרות '+staffDept+' הוגשו בהצלחה');
+    const wRes = await apiGet({action:'weeks'});
+    allWeeks = wRes.weeks || [];
+    ensureWeeksExist(getCurrentWeekLabel(), getNextWeekLabel());
+    buildWeekChips();
+  } else {
+    status.textContent = '❌ שגיאה: '+(res.error||'Unknown error');
+    status.className = 'submit-status error';
+  }
+}
 
 // ═══════════════════════════════════════════════════════════
 // SETTINGS SECTION

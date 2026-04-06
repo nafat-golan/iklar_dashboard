@@ -28,6 +28,9 @@ function doGet(e) {
       case 'validate':
         result = validateKey(e.parameter.key || '');
         break;
+      case 'validateDept':
+        result = validateDeptKey(e.parameter.key || '');
+        break;
       default:
         result = { error: 'Unknown action: ' + action };
     }
@@ -94,6 +97,8 @@ function getConfig() {
   // Row 0 = headers: unit | key | (ignored)
   // Rows 1+ = unit data
   // We also look for an "efforts" section
+  const departments = [];
+
   let section = 'units';
   for (let i = 1; i < data.length; i++) {
     const col0 = String(data[i][0] || '').trim();
@@ -101,7 +106,8 @@ function getConfig() {
     const col2 = String(data[i][2] || '').trim();
 
     if (col0 === '---') {
-      section = 'efforts';
+      if (section === 'units') section = 'efforts';
+      else if (section === 'efforts') section = 'departments';
       continue;
     }
 
@@ -112,9 +118,13 @@ function getConfig() {
     if (section === 'efforts' && col0) {
       efforts.push({ name: col0, desc: col1, icon: col2 });
     }
+
+    if (section === 'departments' && col0) {
+      departments.push({ name: col0 });
+    }
   }
 
-  return { units, efforts };
+  return { units, efforts, departments };
 }
 
 // ─── Validate Key ──────────────────────────────────────────
@@ -133,6 +143,30 @@ function validateKey(key) {
       return { valid: true, unit: unitName };
     }
     if (String(data[i][0] || '').trim() === '---') break;
+  }
+
+  return { valid: false };
+}
+
+// ─── Validate Department Key ───────────────────────────────
+function validateDeptKey(key) {
+  if (!key) return { valid: false };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ws = ss.getSheetByName(CONFIG_SHEET);
+  if (!ws) return { valid: false };
+
+  const data = ws.getDataRange().getValues();
+  let separatorCount = 0;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0] || '').trim() === '---') { separatorCount++; continue; }
+    if (separatorCount >= 2) {
+      const deptName = String(data[i][0] || '').trim();
+      const deptKey = String(data[i][1] || '').trim();
+      if (deptKey && deptKey === key) {
+        return { valid: true, dept: deptName };
+      }
+    }
   }
 
   return { valid: false };
@@ -218,13 +252,19 @@ function getPlans(week) {
 function submitPlan(body) {
   const { key, week, data: rows } = body;
 
-  // Validate key
-  const validation = validateKey(key);
-  if (!validation.valid) {
-    return { error: 'קוד יחידה לא תקין' };
+  // Validate key — try unit first, then department
+  let validation = validateKey(key);
+  let unit;
+  if (validation.valid) {
+    unit = validation.unit;
+  } else {
+    validation = validateDeptKey(key);
+    if (validation.valid) {
+      unit = validation.dept;
+    } else {
+      return { error: 'קוד לא תקין' };
+    }
   }
-
-  const unit = validation.unit;
   if (!week || !rows || !Array.isArray(rows)) {
     return { error: 'Missing week or data' };
   }
@@ -329,15 +369,26 @@ function addEffort(body) {
 
   // Check for duplicate name
   const data = ws.getDataRange().getValues();
-  let inEfforts = false;
+  let separatorCount = 0;
+  let secondSepRow = -1;
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === '---') { inEfforts = true; continue; }
-    if (inEfforts && String(data[i][0]).trim() === name) {
+    if (String(data[i][0]).trim() === '---') {
+      separatorCount++;
+      if (separatorCount === 2) { secondSepRow = i; break; }
+      continue;
+    }
+    if (separatorCount === 1 && String(data[i][0]).trim() === name) {
       return { error: 'Effort already exists: ' + name };
     }
   }
 
-  ws.appendRow([name, desc, icon]);
+  // Insert before the second --- (or append if no second separator)
+  if (secondSepRow >= 0) {
+    ws.insertRowBefore(secondSepRow + 1);
+    ws.getRange(secondSepRow + 1, 1, 1, 3).setValues([[name, desc, icon]]);
+  } else {
+    ws.appendRow([name, desc, icon]);
+  }
   SpreadsheetApp.flush();
   return { success: true };
 }
@@ -358,10 +409,10 @@ function updateEffort(body) {
 
   const data = ws.getDataRange().getValues();
   let found = false;
-  let inEfforts = false;
+  let separatorCount = 0;
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === '---') { inEfforts = true; continue; }
-    if (inEfforts && String(data[i][0]).trim() === oldName) {
+    if (String(data[i][0]).trim() === '---') { separatorCount++; if (separatorCount >= 2) break; continue; }
+    if (separatorCount === 1 && String(data[i][0]).trim() === oldName) {
       ws.getRange(i + 1, 1, 1, 3).setValues([[newName, desc, icon]]);
       found = true;
       break;
@@ -399,10 +450,10 @@ function removeEffort(body) {
   if (!ws) return { error: 'Missing config sheet' };
 
   const data = ws.getDataRange().getValues();
-  let inEfforts = false;
+  let separatorCount = 0;
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === '---') { inEfforts = true; continue; }
-    if (inEfforts && String(data[i][0]).trim() === name) {
+    if (String(data[i][0]).trim() === '---') { separatorCount++; if (separatorCount >= 2) break; continue; }
+    if (separatorCount === 1 && String(data[i][0]).trim() === name) {
       ws.deleteRow(i + 1);
       SpreadsheetApp.flush();
       return { success: true };
@@ -425,11 +476,15 @@ function reorderEfforts(body) {
 
   const data = ws.getDataRange().getValues();
 
-  // Find the separator row and collect effort rows
+  // Find the first separator row and collect effort rows (stop at second ---)
   let separatorRow = -1;
   const effortRows = []; // {name, desc, icon}
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === '---') { separatorRow = i; continue; }
+    if (String(data[i][0]).trim() === '---') {
+      if (separatorRow < 0) { separatorRow = i; }
+      else { break; } // stop at second separator
+      continue;
+    }
     if (separatorRow >= 0 && String(data[i][0]).trim()) {
       effortRows.push({
         name: String(data[i][0]).trim(),
@@ -452,15 +507,24 @@ function reorderEfforts(body) {
     if (!sorted.find(s => s.name === e.name)) sorted.push(e);
   }
 
-  // Clear effort rows and rewrite
-  const firstEffortRow = separatorRow + 2; // 1-indexed
-  const lastRow = ws.getLastRow();
-  if (lastRow >= firstEffortRow) {
-    ws.deleteRows(firstEffortRow, lastRow - firstEffortRow + 1);
+  // Find the second separator (departments) to know where efforts end
+  let secondSeparator = -1;
+  for (let i = separatorRow + 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === '---') { secondSeparator = i; break; }
   }
 
-  for (const e of sorted) {
-    ws.appendRow([e.name, e.desc, e.icon]);
+  // Clear effort rows and rewrite (preserve departments section)
+  const firstEffortRow = separatorRow + 2; // 1-indexed
+  const lastEffortRow = secondSeparator >= 0 ? secondSeparator : ws.getLastRow(); // stop before second ---
+  if (lastEffortRow >= firstEffortRow) {
+    ws.deleteRows(firstEffortRow, lastEffortRow - firstEffortRow);
+  }
+
+  // Insert sorted efforts before the departments separator
+  const insertAt = separatorRow + 2; // 1-indexed, after first ---
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    ws.insertRowBefore(insertAt);
+    ws.getRange(insertAt, 1, 1, 3).setValues([[sorted[i].name, sorted[i].desc, sorted[i].icon]]);
   }
 
   SpreadsheetApp.flush();
@@ -495,6 +559,15 @@ function setupSheets() {
   cfg.appendRow(['זמן יקר יקל"ר', 'אימון פנים יקל"ר', '🎯']);
   cfg.appendRow(['קשר עם הרשות', 'סיור רשות, הע"מ רשות, הדרכות מכלולים, סע"ר', '🤝']);
   cfg.appendRow(['תיאום בעלי תפקידים מהנפה', 'נמרוד, מירב, מיגון, קה"א נפה, חפ"ק אלפ"א, מפקד נפה, קנ"ר', '📞']);
+  cfg.appendRow(['---', '', '']);
+  cfg.appendRow(['אג"ם', 'agam1', '']);
+  cfg.appendRow(['תקשוב', 'tikshov2', '']);
+  cfg.appendRow(['רפואה', 'refua3', '']);
+  cfg.appendRow(['תכנון', 'tichnun4', '']);
+  cfg.appendRow(['מלכ"א', 'malka5', '']);
+  cfg.appendRow(['משא"ן', 'mashan6', '']);
+  cfg.appendRow(['מודיעין', 'modin7', '']);
+  cfg.appendRow(['אוכלוסיה', 'ukhlusiya8', '']);
 
   // Plans sheet
   let plans = ss.getSheetByName(PLANS_SHEET);
