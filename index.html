@@ -327,6 +327,37 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
 .radar-grid-item .radar-label{font-size:13px;font-weight:700;color:#2d3d1e;margin-bottom:4px}
 @media(max-width:900px){.radar-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.radar-grid{grid-template-columns:1fr}}
+
+/* ─── Settings Section ──────────────────────────────────── */
+.settings-login{max-width:400px;margin:40px auto;text-align:center}
+.settings-login h2{font-size:22px;color:#2d3d1e;margin-bottom:8px}
+.settings-login p{font-size:14px;color:#888;margin-bottom:20px}
+.settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.settings-header h2{font-size:20px;color:#2d3d1e}
+.effort-list{display:flex;flex-direction:column;gap:10px}
+.effort-list-item{background:#fff;border:1.5px solid #e0d8c4;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:box-shadow .15s}
+.effort-list-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.effort-list-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;background:#f7f3ea;border:1px solid #e8e0cc}
+.effort-list-info{flex:1;min-width:0}
+.effort-list-name{font-size:14px;font-weight:700;color:#2d3d1e}
+.effort-list-desc{font-size:12px;color:#888;margin-top:2px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.effort-list-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.effort-list-actions .btn-icon{background:none;border:1.5px solid #ddd;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:all .15s}
+.effort-list-actions .btn-icon:hover{background:#f7f3ea;border-color:#c9a227}
+.effort-list-actions .btn-icon.danger:hover{background:#fce4ec;border-color:#ef5350}
+
+.effort-form-card{background:#fff;border:1.5px solid #c9a227;border-radius:10px;padding:20px;margin-bottom:16px}
+.effort-form-card h3{font-size:16px;color:#2d3d1e;margin-bottom:14px}
+.effort-form-row{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;align-items:flex-start}
+.effort-form-field{display:flex;flex-direction:column;gap:4px}
+.effort-form-field label{font-size:12px;font-weight:700;color:#555}
+.effort-form-field input,.effort-form-field textarea{padding:8px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px}
+.effort-form-field input:focus,.effort-form-field textarea:focus{outline:none;border-color:#c9a227}
+.emoji-picker-wrap{display:flex;gap:6px;flex-wrap:wrap;padding:6px 0}
+.emoji-opt{width:36px;height:36px;border-radius:8px;border:1.5px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all .15s;background:#fff}
+.emoji-opt:hover{background:#f7f3ea;border-color:#c9a227}
+.emoji-opt.selected{background:#2d3d1e;border-color:#2d3d1e}
+.effort-form-actions{display:flex;gap:8px;margin-top:8px}
 </style>
 </head>
 <body class="is-loading">
@@ -370,6 +401,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
   <button class="nav-btn" data-section="followup-section" onclick="switchSection('followup-section')">✅ מעקב ביצוע</button>
   <button class="nav-btn" data-section="units-section" onclick="switchSection('units-section')">👁️ תצוגת יחידות</button>
   <button class="nav-btn active" data-section="manager-section" onclick="switchSection('manager-section')">📊 תצוגת מנהל</button>
+  <button class="nav-btn" data-section="settings-section" onclick="switchSection('settings-section')">⚙️ הגדרות</button>
 </div>
 
 <!-- ═════════════════════════════════════════════════════════ -->
@@ -498,6 +530,35 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
     </div>
     <div id="manager-content"></div>
   </div>
+
+  <!-- ── SETTINGS SECTION ──────────────────────────────── -->
+  <div id="settings-section" class="section">
+    <!-- Admin login step -->
+    <div id="settings-login" class="settings-login">
+      <h2>⚙️ הגדרות מערכת</h2>
+      <p>הזן סיסמת מנהל כדי לערוך הגדרות</p>
+      <div class="key-input-wrap">
+        <button class="btn btn-primary" onclick="validateSettingsAdmin()">כניסה</button>
+        <input type="password" id="settings-password" class="key-input" placeholder="סיסמת מנהל" autocomplete="off">
+      </div>
+      <div id="settings-login-error" style="color:#c0392b;font-size:13px;margin-top:10px"></div>
+    </div>
+
+    <!-- Settings main -->
+    <div id="settings-main" style="display:none">
+      <div class="settings-header">
+        <h2>⚙️ ניהול מאמצים</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="showAddEffortForm()">➕ הוסף מאמץ</button>
+          <button class="btn btn-outline" onclick="logoutSettings()">🔒 התנתק</button>
+        </div>
+      </div>
+
+      <div id="settings-effort-form"></div>
+      <div id="settings-effort-list"></div>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -568,6 +629,12 @@ const EFFORT_ICONS = [
   {keywords:['תיאום','נפה'],emoji:'📞',bg:'eicon-tiaum'},
 ];
 function getEffortIcon(name){
+  // First check config for a stored icon
+  const cfgEffort = (config.efforts||[]).find(e=>e.name===name);
+  if(cfgEffort && cfgEffort.icon){
+    return {emoji:cfgEffort.icon, bg:'eicon-default'};
+  }
+  // Fallback to keyword matching
   for(const e of EFFORT_ICONS)
     if(e.keywords.some(k=>name.includes(k))) return e;
   return {emoji:'📌',bg:'eicon-default'};
@@ -588,6 +655,8 @@ let formUnit = '';
 let formKey = '';
 let followupUnit = '';
 let followupKey = '';
+let settingsPassword = '';
+let settingsAuthed = false;
 
 // ─── Demo Data ─────────────────────────────────────────────
 function getDemoConfig(){
@@ -651,7 +720,7 @@ function demoValidateKey(key){
 async function apiGet(params){
   if(DEMO_MODE){
     switch(params.action){
-      case 'config': return getDemoConfig();
+      case 'config': return config.units && config.units.length ? {units:config.units,efforts:config.efforts} : getDemoConfig();
       case 'weeks': return getDemoWeeks();
       case 'plans': return getDemoPlans(params.week||currentWeek);
       case 'validate': return demoValidateKey(params.key);
@@ -669,6 +738,28 @@ async function apiPost(body){
   if(DEMO_MODE){
     if(body.action==='followup'){
       return {success:true,unit:followupUnit,week:body.week,updated:body.data?body.data.length:0};
+    }
+    if(body.action==='validateAdmin'){
+      return {valid: body.password==='admin2026'};
+    }
+    if(body.action==='addEffort'){
+      config.efforts.push({name:body.name,desc:body.desc,icon:body.icon});
+      return {success:true};
+    }
+    if(body.action==='updateEffort'){
+      const eff = config.efforts.find(e=>e.name===body.oldName);
+      if(eff){ eff.name=body.newName; eff.desc=body.desc; eff.icon=body.icon; }
+      return {success:true};
+    }
+    if(body.action==='removeEffort'){
+      config.efforts = config.efforts.filter(e=>e.name!==body.name);
+      return {success:true};
+    }
+    if(body.action==='reorderEfforts'){
+      const sorted = [];
+      for(const name of body.order){ const f=config.efforts.find(e=>e.name===name); if(f) sorted.push(f); }
+      config.efforts = sorted;
+      return {success:true};
     }
     // Simulate success
     return {success:true,unit:formUnit,week:body.week,rowCount:10};
@@ -857,9 +948,9 @@ function switchSection(id){
   document.querySelectorAll('.nav-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.section===id);
   });
-  // Hide global week bar on form/followup sections (they have their own week selector)
+  // Hide global week bar on form/followup/settings sections
   const weekBar = document.getElementById('week-bar');
-  weekBar.style.display = (id==='form-section'||id==='followup-section') ? 'none' : 'flex';
+  weekBar.style.display = (id==='form-section'||id==='followup-section'||id==='settings-section') ? 'none' : 'flex';
   // Hide sticky buttons when leaving their sections
   document.getElementById('sticky-submit').classList.remove('visible');
   document.getElementById('sticky-followup').classList.remove('visible');
@@ -874,6 +965,7 @@ function renderCurrentSection(){
       else if(managerView==='charts') renderManagerCharts();
       else renderManagerSection();
       break;
+    case 'settings-section': renderSettingsEffortList(); break;
   }
 }
 
@@ -2143,6 +2235,221 @@ window.addEventListener('scroll', function(){
     }
   }
 }, {passive:true});
+
+// ═══════════════════════════════════════════════════════════
+// SETTINGS SECTION
+// ═══════════════════════════════════════════════════════════
+
+const SETTINGS_EMOJIS = ['🛡️','📣','⚙️','🎯','🤝','📞','📌','🔧','📋','🏗️','💡','🚀','🔥','📦','🎓','🩺','🏠','📡','🛠️','⭐'];
+
+document.getElementById('settings-password').addEventListener('keydown', function(e){
+  if(e.key==='Enter') validateSettingsAdmin();
+});
+
+async function validateSettingsAdmin(){
+  const pw = document.getElementById('settings-password').value.trim();
+  if(!pw){
+    document.getElementById('settings-login-error').textContent = 'נא להזין סיסמה';
+    return;
+  }
+  document.getElementById('settings-login-error').textContent = '';
+
+  showLoader();
+  try{
+    const res = await apiPost({action:'validateAdmin', password:pw});
+    if(res.valid){
+      settingsPassword = pw;
+      settingsAuthed = true;
+      document.getElementById('settings-login').style.display = 'none';
+      document.getElementById('settings-main').style.display = 'block';
+      renderSettingsEffortList();
+    } else {
+      document.getElementById('settings-login-error').textContent = 'סיסמה שגויה';
+    }
+  }finally{ hideLoader(); }
+}
+
+function logoutSettings(){
+  settingsPassword = '';
+  settingsAuthed = false;
+  document.getElementById('settings-login').style.display = 'block';
+  document.getElementById('settings-main').style.display = 'none';
+  document.getElementById('settings-password').value = '';
+  document.getElementById('settings-effort-form').innerHTML = '';
+}
+
+function renderSettingsEffortList(){
+  if(!settingsAuthed) return;
+  const el = document.getElementById('settings-effort-list');
+  const efforts = config.efforts || [];
+
+  if(!efforts.length){
+    el.innerHTML = '<p class="no-data">לא הוגדרו מאמצים</p>';
+    return;
+  }
+
+  el.innerHTML = '<div class="effort-list">' + efforts.map((eff, i) => {
+    const icon = eff.icon || getEffortIcon(eff.name).emoji;
+    return `<div class="effort-list-item" data-idx="${i}">
+      <div class="effort-list-icon">${esc(icon)}</div>
+      <div class="effort-list-info">
+        <div class="effort-list-name">${esc(eff.name)}</div>
+        <div class="effort-list-desc" title="${esc(eff.desc||'')}">${esc(eff.desc||'—')}</div>
+      </div>
+      <div class="effort-list-actions">
+        <button class="btn-icon" title="הזז למעלה" onclick="moveEffort(${i},-1)" ${i===0?'disabled style="opacity:.3;cursor:default"':''}>▲</button>
+        <button class="btn-icon" title="הזז למטה" onclick="moveEffort(${i},1)" ${i===efforts.length-1?'disabled style="opacity:.3;cursor:default"':''}>▼</button>
+        <button class="btn-icon" title="ערוך" onclick="showEditEffortForm(${i})">✏️</button>
+        <button class="btn-icon danger" title="מחק" onclick="deleteEffort(${i})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function showAddEffortForm(){
+  renderEffortForm({name:'', desc:'', icon:'📌'}, 'add', -1);
+}
+
+function showEditEffortForm(idx){
+  const eff = config.efforts[idx];
+  if(!eff) return;
+  renderEffortForm({name:eff.name, desc:eff.desc||'', icon:eff.icon||getEffortIcon(eff.name).emoji}, 'edit', idx);
+}
+
+function renderEffortForm(data, mode, idx){
+  const formEl = document.getElementById('settings-effort-form');
+  const title = mode==='add' ? '➕ הוסף מאמץ חדש' : '✏️ עריכת מאמץ';
+  const submitText = mode==='add' ? 'הוסף' : 'שמור שינויים';
+
+  const emojiOptions = SETTINGS_EMOJIS.map(e =>
+    `<div class="emoji-opt${e===data.icon?' selected':''}" data-emoji="${e}" onclick="selectEffortEmoji(this)">${e}</div>`
+  ).join('');
+
+  formEl.innerHTML = `<div class="effort-form-card">
+    <h3>${title}</h3>
+    <div class="effort-form-row">
+      <div class="effort-form-field" style="flex:1">
+        <label>שם המאמץ</label>
+        <input type="text" id="effort-form-name" value="${esc(data.name)}" placeholder="שם המאמץ">
+      </div>
+    </div>
+    <div class="effort-form-row">
+      <div class="effort-form-field" style="flex:1">
+        <label>תיאור</label>
+        <textarea id="effort-form-desc" rows="2" placeholder="תיאור קצר...">${esc(data.desc)}</textarea>
+      </div>
+    </div>
+    <div class="effort-form-row">
+      <div class="effort-form-field">
+        <label>אייקון</label>
+        <div class="emoji-picker-wrap" id="emoji-picker">${emojiOptions}</div>
+        <input type="hidden" id="effort-form-icon" value="${esc(data.icon)}">
+      </div>
+    </div>
+    <div class="effort-form-actions">
+      <button class="btn btn-success" onclick="submitEffortForm('${mode}',${idx})">${submitText}</button>
+      <button class="btn btn-outline" onclick="cancelEffortForm()">ביטול</button>
+    </div>
+  </div>`;
+
+  formEl.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function selectEffortEmoji(el){
+  document.querySelectorAll('#emoji-picker .emoji-opt').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('effort-form-icon').value = el.dataset.emoji;
+}
+
+function cancelEffortForm(){
+  document.getElementById('settings-effort-form').innerHTML = '';
+}
+
+async function submitEffortForm(mode, idx){
+  const name = document.getElementById('effort-form-name').value.trim();
+  const desc = document.getElementById('effort-form-desc').value.trim();
+  const icon = document.getElementById('effort-form-icon').value.trim() || '📌';
+
+  if(!name){
+    alert('נא להזין שם מאמץ');
+    return;
+  }
+
+  showLoader();
+  try{
+    let res;
+    if(mode === 'add'){
+      res = await apiPost({action:'addEffort', password:settingsPassword, name, desc, icon});
+    } else {
+      const oldName = config.efforts[idx].name;
+      res = await apiPost({action:'updateEffort', password:settingsPassword, oldName, newName:name, desc, icon});
+    }
+
+    if(res.success){
+      showToast(mode==='add' ? '✅ מאמץ נוסף בהצלחה' : '✅ מאמץ עודכן בהצלחה');
+      cancelEffortForm();
+      // Refresh config
+      const freshConfig = await apiGet({action:'config'});
+      if(!freshConfig.error){
+        config = freshConfig;
+        localStorage.setItem(CACHE_KEY_CONFIG, JSON.stringify(config));
+      }
+      renderSettingsEffortList();
+    } else {
+      alert('שגיאה: ' + (res.error || 'Unknown error'));
+    }
+  }finally{ hideLoader(); }
+}
+
+async function deleteEffort(idx){
+  const eff = config.efforts[idx];
+  if(!eff) return;
+  if(!confirm(`למחוק את המאמץ "${eff.name}"?\n\nנתונים קיימים בתוכניות שכבר הוגשו לא יושפעו.`)) return;
+
+  showLoader();
+  try{
+    const res = await apiPost({action:'removeEffort', password:settingsPassword, name:eff.name});
+    if(res.success){
+      showToast('✅ מאמץ נמחק');
+      const freshConfig = await apiGet({action:'config'});
+      if(!freshConfig.error){
+        config = freshConfig;
+        localStorage.setItem(CACHE_KEY_CONFIG, JSON.stringify(config));
+      }
+      renderSettingsEffortList();
+    } else {
+      alert('שגיאה: ' + (res.error || 'Unknown error'));
+    }
+  }finally{ hideLoader(); }
+}
+
+async function moveEffort(idx, direction){
+  const efforts = config.efforts;
+  const newIdx = idx + direction;
+  if(newIdx < 0 || newIdx >= efforts.length) return;
+
+  // Build new order
+  const order = efforts.map(e=>e.name);
+  const temp = order[idx];
+  order[idx] = order[newIdx];
+  order[newIdx] = temp;
+
+  showLoader();
+  try{
+    const res = await apiPost({action:'reorderEfforts', password:settingsPassword, order});
+    if(res.success){
+      // Refresh config
+      const freshConfig = await apiGet({action:'config'});
+      if(!freshConfig.error){
+        config = freshConfig;
+        localStorage.setItem(CACHE_KEY_CONFIG, JSON.stringify(config));
+      }
+      renderSettingsEffortList();
+    } else {
+      alert('שגיאה: ' + (res.error || 'Unknown error'));
+    }
+  }finally{ hideLoader(); }
+}
 
 // ─── Start ─────────────────────────────────────────────────
 // Only init if gate is already passed (otherwise init is called after gate check)

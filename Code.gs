@@ -7,6 +7,7 @@
 
 const PLANS_SHEET = 'plans';
 const CONFIG_SHEET = 'config';
+const ADMIN_PASSWORD = 'admin2026';
 
 // ─── GET Handler ───────────────────────────────────────────
 function doGet(e) {
@@ -52,6 +53,21 @@ function doPost(e) {
         break;
       case 'followup':
         result = submitFollowup(body);
+        break;
+      case 'validateAdmin':
+        result = validateAdmin(body);
+        break;
+      case 'addEffort':
+        result = addEffort(body);
+        break;
+      case 'updateEffort':
+        result = updateEffort(body);
+        break;
+      case 'removeEffort':
+        result = removeEffort(body);
+        break;
+      case 'reorderEfforts':
+        result = reorderEfforts(body);
         break;
       default:
         result = { error: 'Unknown action: ' + action };
@@ -290,6 +306,165 @@ function submitFollowup(body) {
 
   SpreadsheetApp.flush();
   return { success: true, unit, week, updated };
+}
+
+// ─── Validate Admin Password ───────────────────────────────
+function validateAdmin(body) {
+  const password = String(body.password || '').trim();
+  return { valid: password === ADMIN_PASSWORD };
+}
+
+// ─── Add Effort ────────────────────────────────────────────
+function addEffort(body) {
+  if (String(body.password || '') !== ADMIN_PASSWORD) return { error: 'Unauthorized' };
+
+  const name = String(body.name || '').trim();
+  const desc = String(body.desc || '').trim();
+  const icon = String(body.icon || '📌').trim();
+  if (!name) return { error: 'Missing effort name' };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ws = ss.getSheetByName(CONFIG_SHEET);
+  if (!ws) return { error: 'Missing config sheet' };
+
+  // Check for duplicate name
+  const data = ws.getDataRange().getValues();
+  let inEfforts = false;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === '---') { inEfforts = true; continue; }
+    if (inEfforts && String(data[i][0]).trim() === name) {
+      return { error: 'Effort already exists: ' + name };
+    }
+  }
+
+  ws.appendRow([name, desc, icon]);
+  SpreadsheetApp.flush();
+  return { success: true };
+}
+
+// ─── Update Effort ─────────────────────────────────────────
+function updateEffort(body) {
+  if (String(body.password || '') !== ADMIN_PASSWORD) return { error: 'Unauthorized' };
+
+  const oldName = String(body.oldName || '').trim();
+  const newName = String(body.newName || '').trim();
+  const desc = String(body.desc || '').trim();
+  const icon = String(body.icon || '📌').trim();
+  if (!oldName || !newName) return { error: 'Missing effort name' };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ws = ss.getSheetByName(CONFIG_SHEET);
+  if (!ws) return { error: 'Missing config sheet' };
+
+  const data = ws.getDataRange().getValues();
+  let found = false;
+  let inEfforts = false;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === '---') { inEfforts = true; continue; }
+    if (inEfforts && String(data[i][0]).trim() === oldName) {
+      ws.getRange(i + 1, 1, 1, 3).setValues([[newName, desc, icon]]);
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) return { error: 'Effort not found: ' + oldName };
+
+  // If name changed, update all matching rows in plans sheet
+  if (oldName !== newName) {
+    const plansWs = ss.getSheetByName(PLANS_SHEET);
+    if (plansWs && plansWs.getLastRow() >= 2) {
+      const plansData = plansWs.getDataRange().getValues();
+      for (let i = 1; i < plansData.length; i++) {
+        if (String(plansData[i][4]).trim() === oldName) {
+          plansWs.getRange(i + 1, 5).setValue(newName);
+        }
+      }
+    }
+  }
+
+  SpreadsheetApp.flush();
+  return { success: true };
+}
+
+// ─── Remove Effort ─────────────────────────────────────────
+function removeEffort(body) {
+  if (String(body.password || '') !== ADMIN_PASSWORD) return { error: 'Unauthorized' };
+
+  const name = String(body.name || '').trim();
+  if (!name) return { error: 'Missing effort name' };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ws = ss.getSheetByName(CONFIG_SHEET);
+  if (!ws) return { error: 'Missing config sheet' };
+
+  const data = ws.getDataRange().getValues();
+  let inEfforts = false;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === '---') { inEfforts = true; continue; }
+    if (inEfforts && String(data[i][0]).trim() === name) {
+      ws.deleteRow(i + 1);
+      SpreadsheetApp.flush();
+      return { success: true };
+    }
+  }
+
+  return { error: 'Effort not found: ' + name };
+}
+
+// ─── Reorder Efforts ───────────────────────────────────────
+function reorderEfforts(body) {
+  if (String(body.password || '') !== ADMIN_PASSWORD) return { error: 'Unauthorized' };
+
+  const order = body.order; // array of effort names in desired order
+  if (!order || !Array.isArray(order)) return { error: 'Missing order array' };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ws = ss.getSheetByName(CONFIG_SHEET);
+  if (!ws) return { error: 'Missing config sheet' };
+
+  const data = ws.getDataRange().getValues();
+
+  // Find the separator row and collect effort rows
+  let separatorRow = -1;
+  const effortRows = []; // {name, desc, icon}
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === '---') { separatorRow = i; continue; }
+    if (separatorRow >= 0 && String(data[i][0]).trim()) {
+      effortRows.push({
+        name: String(data[i][0]).trim(),
+        desc: String(data[i][1] || '').trim(),
+        icon: String(data[i][2] || '').trim()
+      });
+    }
+  }
+
+  if (separatorRow < 0) return { error: 'Config format error: no separator row' };
+
+  // Sort effortRows by the provided order
+  const sorted = [];
+  for (const name of order) {
+    const found = effortRows.find(e => e.name === name);
+    if (found) sorted.push(found);
+  }
+  // Append any efforts not in the order array (safety)
+  for (const e of effortRows) {
+    if (!sorted.find(s => s.name === e.name)) sorted.push(e);
+  }
+
+  // Clear effort rows and rewrite
+  const firstEffortRow = separatorRow + 2; // 1-indexed
+  const lastRow = ws.getLastRow();
+  if (lastRow >= firstEffortRow) {
+    ws.deleteRows(firstEffortRow, lastRow - firstEffortRow + 1);
+  }
+
+  for (const e of sorted) {
+    ws.appendRow([e.name, e.desc, e.icon]);
+  }
+
+  SpreadsheetApp.flush();
+  return { success: true };
 }
 
 // ─── Initial Setup Helper ──────────────────────────────────
