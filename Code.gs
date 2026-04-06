@@ -207,20 +207,30 @@ function getWeeks() {
   if (!ws || ws.getLastRow() < 2) return { weeks: [] };
 
   const data = ws.getDataRange().getValues();
+
+  // Build set of department names
+  const cfgData = getConfig();
+  const deptNames = new Set((cfgData.departments || []).map(d => d.name));
+
   const weekMap = {};
 
   for (let i = 1; i < data.length; i++) {
     const week = String(data[i][0] || '').trim();
     const unit = String(data[i][1] || '').trim();
-    if (!week) continue;
+    if (!week || !unit) continue;
 
-    if (!weekMap[week]) weekMap[week] = new Set();
-    weekMap[week].add(unit);
+    if (!weekMap[week]) weekMap[week] = { units: new Set(), depts: new Set() };
+    if (deptNames.has(unit)) {
+      weekMap[week].depts.add(unit);
+    } else {
+      weekMap[week].units.add(unit);
+    }
   }
 
   const weeks = Object.keys(weekMap).map(w => ({
     label: w,
-    unitCount: weekMap[w].size
+    unitCount: weekMap[w].units.size,
+    deptCount: weekMap[w].depts.size
   }));
 
   // Sort by parsing first date

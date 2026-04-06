@@ -768,7 +768,7 @@ function getDemoConfig(){
 
 function getDemoWeeks(){
   const w = getCurrentWeekLabel();
-  return {weeks:[{label:w,unitCount:3}]};
+  return {weeks:[{label:w,unitCount:3,deptCount:4}]};
 }
 
 function getDemoPlans(week){
@@ -998,10 +998,10 @@ async function init(){
 
 function ensureWeeksExist(curWeek, nextWeek){
   if(!allWeeks.find(w=>w.label===nextWeek)){
-    allWeeks.unshift({label:nextWeek,unitCount:0});
+    allWeeks.unshift({label:nextWeek,unitCount:0,deptCount:0});
   }
   if(!allWeeks.find(w=>w.label===curWeek)){
-    allWeeks.unshift({label:curWeek,unitCount:0});
+    allWeeks.unshift({label:curWeek,unitCount:0,deptCount:0});
   }
 }
 
@@ -1088,10 +1088,12 @@ function buildWeekChips(){
   const el = document.getElementById('week-select');
   el.innerHTML = '';
   const totalUnits = config.units?.length || 9;
+  const totalDepts = config.departments?.length || 8;
   allWeeks.forEach(w => {
     const opt = document.createElement('option');
     opt.value = w.label;
-    opt.textContent = w.label + ' (' + w.unitCount + '/' + totalUnits + ' יחידות)';
+    const deptPart = w.deptCount!=null ? ' | ' + (w.deptCount||0) + '/' + totalDepts + ' מכלולים' : '';
+    opt.textContent = w.label + ' (' + (w.unitCount||0) + '/' + totalUnits + ' יחידות' + deptPart + ')';
     if(w.label === currentWeek) opt.selected = true;
     el.appendChild(opt);
   });
