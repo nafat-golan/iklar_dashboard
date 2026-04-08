@@ -680,7 +680,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
           <button class="toggle-btn active" id="view-table-btn" onclick="setContactsView('table')">🗂️ טבלה</button>
           <button class="toggle-btn" id="view-grid-btn" onclick="setContactsView('grid')">📱 כרטיסיות</button>
         </div>
-        ${settingsAuthed ? `<button class="btn btn-success" onclick="openContactModal()">+ הוסף איש קשר</button>` : ''}
+        <button class="btn btn-success" id="add-contact-btn" style="display:none" onclick="openContactModal()">+ הוסף איש קשר</button>
       </div>
     </div>
 
@@ -1312,6 +1312,10 @@ function getWhatsAppLink(phone){
 function renderContactsSection(){
   const container = document.getElementById('contacts-container');
   const staff = config.staff || [];
+  
+  // Update add button visibility
+  const addBtn = document.getElementById('add-contact-btn');
+  if(addBtn) addBtn.style.display = settingsAuthed ? 'block' : 'none';
   
   // Update dropdown options dynamically
   const branches = [...new Set(staff.map(p => p.branch))].sort();
