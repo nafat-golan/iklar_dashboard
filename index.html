@@ -829,7 +829,7 @@ if(isGateValid()){
 // ─── Configuration ─────────────────────────────────────────
 const _a='AKfycbw8cuRIxmlZvGl_VMziLR3EcLLBfJxdvHe4Ps';
 const _b='CRM989JoyIJnmPwUMktfooMtWcTNJJ';
-const API_URL = 'https://script.google.com/macros/s/AKfycbw8cuRIxmlZvGl_VMziLR3EcLLBfJxdvHe4PsCRM989JoyIJnmPwUMktfooMtWcTNJJ/exec';
+const API_URL = 'https://script.google.com/macros/s/'+_a+_b+'/exec';
 
 // ─── Demo mode: set to true to use built-in sample data ────
 const DEMO_MODE = false;
@@ -1721,9 +1721,20 @@ function addStaffInput(btn, containerOverride) {
 
 function updateStaffDatalist(unit, branchFilter) {
   const staff = config.staff || [];
+  console.log('[DEBUG] updateStaffDatalist called for Unit:', `"${unit}"`, 'Branch Filter:', `"${branchFilter || 'None'}"`);
+  console.log('[DEBUG] Total staff in memory:', staff.length);
+
   let filtered = staff.filter(p => p.unit === unit);
+  console.log(`[DEBUG] Found ${filtered.length} staff members matching Unit: "${unit}"`);
+
   if (branchFilter) {
+    const beforeBranch = filtered.length;
     filtered = filtered.filter(p => p.branch === branchFilter);
+    console.log(`[DEBUG] After Branch Filter ("${branchFilter}"), ${filtered.length} members remain (Removed ${beforeBranch - filtered.length})`);
+  }
+
+  if (filtered.length === 0 && staff.length > 0) {
+    console.warn('[DEBUG] FILTER MISMATCH! Sample staff unit from data:', `"${staff[0].unit}"`, 'Sample staff branch:', `"${staff[0].branch}"`);
   }
 
   let datalist = document.getElementById('staff-list');
