@@ -680,7 +680,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
           <button class="toggle-btn active" id="view-table-btn" onclick="setContactsView('table')">🗂️ טבלה</button>
           <button class="toggle-btn" id="view-grid-btn" onclick="setContactsView('grid')">📱 כרטיסיות</button>
         </div>
-        <button class="btn btn-success" onclick="openContactModal()">+ הוסף איש קשר</button>
+        ${settingsAuthed ? `<button class="btn btn-success" onclick="openContactModal()">+ הוסף איש קשר</button>` : ''}
       </div>
     </div>
 
@@ -1331,7 +1331,7 @@ function renderContactsSection(){
   branchSelect.innerHTML = '<option value="">כל הארגונים</option>' + branches.map(b => `<option value="${esc(b)}" ${b===currentBranch?'selected':''}>${esc(b)}</option>`).join('');
   unitSelect.innerHTML = '<option value="">כל המכלולים</option>' + units.map(u => `<option value="${esc(u)}" ${u===currentUnit?'selected':''}>${esc(u)}</option>`).join('');
 
-  let filtered = staff.map((p, originalIdx) => ({...p, originalIdx})).filter(p => {
+  let filtered = staff.map((p, arrayIdx) => ({...p, arrayIdx})).filter(p => {
     const searchStr = (p.name + ' ' + (p.role||'')).toLowerCase();
     const matchesSearch = searchStr.includes(contactsFilter);
     const matchesBranch = !contactsBranchFilter || p.branch === contactsBranchFilter;
@@ -1372,7 +1372,10 @@ function renderContactsSection(){
                 </td>
                 <td>
                   <div style="display:flex;gap:8px">
-                    <button class="btn btn-outline" style="padding:4px 8px;font-size:12px" onclick="openContactModal(${p.originalIdx})">ערוך</button>
+                    ${settingsAuthed ? `
+                      <button class="btn btn-outline" style="padding:4px 8px;font-size:12px" onclick="openContactModal(${p.arrayIdx})">ערוך</button>
+                      <button class="btn btn-outline danger" style="padding:4px 8px;font-size:12px;color:#ef4444" onclick="deleteContact(${p.arrayIdx})">מחק</button>
+                    ` : ''}
                     ${p.phone ? `<a href="${getWhatsAppLink(p.phone)}" target="_blank" class="btn btn-success" style="padding:4px 8px;font-size:12px">WhatsApp</a>` : ''}
                   </div>
                 </td>
@@ -1411,7 +1414,10 @@ function renderContactsSection(){
               ` : ''}
             </div>
             <div class="contact-card-actions">
-              <button class="btn btn-outline" style="flex:1;font-size:12px" onclick="openContactModal(${p.originalIdx})">ערוך</button>
+              ${settingsAuthed ? `
+                <button class="btn btn-outline" style="flex:1;font-size:12px" onclick="openContactModal(${p.arrayIdx})">ערוך</button>
+                <button class="btn btn-outline danger" style="flex:1;font-size:12px;color:#ef4444" onclick="deleteContact(${p.arrayIdx})">מחק</button>
+              ` : ''}
               ${p.phone ? `
                 <a href="${getWhatsAppLink(p.phone)}" target="_blank" class="btn btn-success" style="flex:1;font-size:12px;text-align:center">WhatsApp</a>
               ` : ''}
@@ -1453,7 +1459,7 @@ function closeContactModal(){
 }
 
 async function saveContact(){
-  const idx = document.getElementById('contact-id').value;
+  const arrayIdx = document.getElementById('contact-id').value;
   const sheetId = document.getElementById('contact-sheet-id').value;
   const name = document.getElementById('contact-name').value.trim();
   const branch = document.getElementById('contact-branch').value;
@@ -1471,21 +1477,25 @@ async function saveContact(){
   btn.textContent = 'שומר...';
 
   const contactData = { name, id: sheetId, branch, unit, role, phone };
+  const rowIndex = arrayIdx === '' ? null : config.staff[arrayIdx].rowIndex;
   
   try {
     const res = await apiPost({
       action: 'updateStaff',
-      index: idx === '' ? null : parseInt(idx),
-      contact: contactData
+      index: rowIndex,
+      contact: contactData,
+      password: settingsPassword
     });
 
     if(res.success){
       showToast('✅ איש קשר נשמר בהצלחה');
       // Update local config
-      if(idx === ''){
-        config.staff.push(contactData);
+      if(arrayIdx === ''){
+        // For new contacts, we'd need to refresh to get the new rowIndex, 
+        // but for now let's just push it so it shows up
+        config.staff.push({...contactData, rowIndex: null}); 
       } else {
-        config.staff[idx] = contactData;
+        config.staff[arrayIdx] = {...config.staff[arrayIdx], ...contactData};
       }
       localStorage.setItem(CACHE_KEY_CONFIG, JSON.stringify(config));
       renderContactsSection();
@@ -1498,6 +1508,33 @@ async function saveContact(){
   } finally {
     btn.disabled = false;
     btn.textContent = 'שמור איש קשר';
+  }
+}
+
+async function deleteContact(arrayIdx){
+  if(!confirm('האם אתה בטוח שברצונך למחוק איש קשר זה?')) return;
+  
+  const rowIndex = config.staff[arrayIdx].rowIndex;
+  showLoader();
+  try {
+    const res = await apiPost({
+      action: 'deleteStaff',
+      index: rowIndex,
+      password: settingsPassword
+    });
+
+    if(res.success){
+      showToast('✅ איש קשר נמחק בהצלחה');
+      config.staff.splice(arrayIdx, 1);
+      localStorage.setItem(CACHE_KEY_CONFIG, JSON.stringify(config));
+      renderContactsSection();
+    } else {
+      showToast('❌ שגיאה במחיקה: ' + (res.error || 'Unknown error'));
+    }
+  } catch(e) {
+    showToast('❌ שגיאה בתקשורת עם השרת');
+  } finally {
+    hideLoader();
   }
 }
 
