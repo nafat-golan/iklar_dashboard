@@ -132,10 +132,11 @@ function getConfig() {
     for (let i = 1; i < sData.length; i++) {
       staff.push({
         name: String(sData[i][0] || '').trim(),
-        branch: String(sData[i][1] || '').trim(),
-        unit: String(sData[i][2] || '').trim(),
-        role: String(sData[i][3] || '').trim(),
-        phone: String(sData[i][4] || '').trim()
+        id: String(sData[i][1] || '').trim(),
+        phone: String(sData[i][2] || '').trim(),
+        branch: String(sData[i][3] || '').trim(),
+        unit: String(sData[i][4] || '').trim(),
+        role: String(sData[i][5] || '').trim()
       });
     }
   }
@@ -615,15 +616,16 @@ function updateStaff(body) {
 
   if (!ws) {
     ws = ss.insertSheet(STAFF_SHEET);
-    ws.appendRow(['name', 'branch', 'unit', 'role', 'phone']);
+    ws.appendRow(['name', 'id', 'phone', 'branch', 'unit', 'role']);
   }
 
   const rowData = [
     contact.name || '',
+    contact.id || '',
+    contact.phone || '',
     contact.branch || '',
     contact.unit || '',
-    contact.role || '',
-    contact.phone || ''
+    contact.role || ''
   ];
 
   if (index === null || index === undefined || index === '') {
@@ -706,9 +708,9 @@ function setupSheets() {
     staff = ss.insertSheet(STAFF_SHEET);
   }
   staff.clear();
-  staff.appendRow(['name', 'branch', 'unit', 'role', 'phone']);
-  staff.appendRow(['ישראל ישראלי', 'מפקדת הנפה', 'אג"ם', 'קמב"ץ', '050-1234567']);
-  staff.appendRow(['שרה כהן', 'רשויות', 'קצרין', 'מנהלת מכלול', '052-7654321']);
+  staff.appendRow(['name', 'id', 'phone', 'branch', 'unit', 'role']);
+  staff.appendRow(['ישראל ישראלי', '12345', '050-1234567', 'מפקדת הנפה', 'אג"ם', 'קמב"ץ']);
+  staff.appendRow(['שרה כהן', '67890', '052-7654321', 'רשויות', 'קצרין', 'מנהלת מכלול']);
 
   SpreadsheetApp.flush();
   Logger.log('Setup complete!');
