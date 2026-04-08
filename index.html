@@ -736,6 +736,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
     <div class="modal-body">
       <form id="contact-form">
         <input type="hidden" id="contact-id">
+        <input type="hidden" id="contact-sheet-id">
         <div class="form-field">
           <label>שם מלא</label>
           <input type="text" id="contact-name" required placeholder="לדוגמה: ישראל ישראלי">
@@ -1429,10 +1430,12 @@ function openContactModal(idx = null){
   
   form.reset();
   document.getElementById('contact-id').value = idx !== null ? idx : '';
+  document.getElementById('contact-sheet-id').value = '';
   
   if(idx !== null){
     const p = config.staff[idx];
     title.textContent = 'עריכת איש קשר';
+    document.getElementById('contact-sheet-id').value = p.id || '';
     document.getElementById('contact-name').value = p.name;
     document.getElementById('contact-branch').value = p.branch;
     document.getElementById('contact-unit').value = p.unit;
@@ -1451,6 +1454,7 @@ function closeContactModal(){
 
 async function saveContact(){
   const idx = document.getElementById('contact-id').value;
+  const sheetId = document.getElementById('contact-sheet-id').value;
   const name = document.getElementById('contact-name').value.trim();
   const branch = document.getElementById('contact-branch').value;
   const unit = document.getElementById('contact-unit').value.trim();
@@ -1466,7 +1470,7 @@ async function saveContact(){
   btn.disabled = true;
   btn.textContent = 'שומר...';
 
-  const contactData = { name, branch, unit, role, phone };
+  const contactData = { name, id: sheetId, branch, unit, role, phone };
   
   try {
     const res = await apiPost({
