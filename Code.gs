@@ -97,6 +97,9 @@ function doPost(e) {
       case 'updateStaff':
         result = updateStaff(body);
         break;
+      case 'deleteStaff':
+        result = deleteStaff(body);
+        break;
       default:
         result = { error: 'Unknown action: ' + action };
     }
@@ -130,7 +133,11 @@ function getConfig() {
   if (staffWs && staffWs.getLastRow() >= 2) {
     const sData = staffWs.getDataRange().getValues();
     for (let i = 1; i < sData.length; i++) {
+      const isActive = String(sData[i][6] || '').toLowerCase() === 'true';
+      if (!isActive) continue;
+      
       staff.push({
+        rowIndex: i, // Store the original row index (0-based from sData)
         name: String(sData[i][0] || '').trim(),
         id: String(sData[i][1] || '').trim(),
         phone: String(sData[i][2] || '').trim(),
@@ -610,13 +617,15 @@ function reorderEfforts(body) {
 
 // ─── Update Staff (Contacts) ───────────────────────────────
 function updateStaff(body) {
-  const { index, contact } = body;
+  const { index, contact, password } = body;
+  if (!validateAdmin({ password }).valid) return { error: 'Unauthorized' };
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let ws = ss.getSheetByName(STAFF_SHEET);
 
   if (!ws) {
     ws = ss.insertSheet(STAFF_SHEET);
-    ws.appendRow(['name', 'id', 'phone', 'branch', 'unit', 'role']);
+    ws.appendRow(['name', 'id', 'phone', 'branch', 'unit', 'role', 'is_active']);
   }
 
   const rowData = [
@@ -625,7 +634,8 @@ function updateStaff(body) {
     contact.phone || '',
     contact.branch || '',
     contact.unit || '',
-    contact.role || ''
+    contact.role || '',
+    'true' // is_active
   ];
 
   if (index === null || index === undefined || index === '') {
@@ -635,10 +645,28 @@ function updateStaff(body) {
     // Update existing (index is 0-based from array, so row is index + 2)
     const row = parseInt(index) + 2;
     if (row <= ws.getLastRow()) {
-      ws.getRange(row, 1, 1, 5).setValues([rowData]);
+      ws.getRange(row, 1, 1, 7).setValues([rowData]);
     } else {
       ws.appendRow(rowData);
     }
+  }
+
+  SpreadsheetApp.flush();
+  return { success: true };
+}
+
+function deleteStaff(body) {
+  const { index, password } = body;
+  if (!validateAdmin({ password }).valid) return { error: 'Unauthorized' };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ws = ss.getSheetByName(STAFF_SHEET);
+  if (!ws) return { error: 'Sheet not found' };
+
+  const row = parseInt(index) + 2;
+  if (row <= ws.getLastRow()) {
+    // Soft delete: set is_active to false
+    ws.getRange(row, 7).setValue('false');
   }
 
   SpreadsheetApp.flush();
@@ -708,9 +736,9 @@ function setupSheets() {
     staff = ss.insertSheet(STAFF_SHEET);
   }
   staff.clear();
-  staff.appendRow(['name', 'id', 'phone', 'branch', 'unit', 'role']);
-  staff.appendRow(['ישראל ישראלי', '12345', '050-1234567', 'מפקדת הנפה', 'אג"ם', 'קמב"ץ']);
-  staff.appendRow(['שרה כהן', '67890', '052-7654321', 'רשויות', 'קצרין', 'מנהלת מכלול']);
+  staff.appendRow(['name', 'id', 'phone', 'branch', 'unit', 'role', 'is_active']);
+  staff.appendRow(['ישראל ישראלי', '12345', '050-1234567', 'מפקדת הנפה', 'אג"ם', 'קמב"ץ', 'true']);
+  staff.appendRow(['שרה כהן', '67890', '052-7654321', 'רשויות', 'קצרין', 'מנהלת מכלול', 'true']);
 
   SpreadsheetApp.flush();
   Logger.log('Setup complete!');
