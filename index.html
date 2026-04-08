@@ -1713,9 +1713,7 @@ function addStaffInput(btn, containerOverride) {
   const wrapper = document.createElement('div');
   wrapper.className = 'staff-input-wrapper';
   wrapper.innerHTML = `
-    <input type="text" class="staff-input" list="staff-list" placeholder="בחר שם..." 
-      oninput="${callback}" 
-      onfocus="updateStaffDatalist(typeof staffDept !== 'undefined' ? staffDept : formUnit, typeof staffDept !== 'undefined' ? 'מפקדת הנפה' : null)">
+    <input type="text" class="staff-input" list="staff-list" placeholder="בחר שם..." oninput="${callback}">
     <button class="remove-staff-btn" onclick="this.parentElement.remove(); ${callback}">×</button>
   `;
   container.appendChild(wrapper);
@@ -1726,31 +1724,21 @@ function updateStaffDatalist(unit, branchFilter) {
   const debugEl = document.getElementById('staff-debug-status');
   
   let filtered = staff.filter(p => p.unit === unit);
-  const countAfterUnit = filtered.length;
-
-  if (branchFilter) {
-    filtered = filtered.filter(p => p.branch === branchFilter);
-  }
   
   if (debugEl) {
     debugEl.style.display = 'block';
-    let msg = `<strong>סנכרון נתונים:</strong><br>`;
-    msg += `• מכלול נוכחי: <strong>${unit}</strong><br>`;
-    msg += `• סה"כ אנשי קשר בזיכרון: ${staff.length}<br>`;
-    msg += `• נמצאו למכלול זה: ${countAfterUnit}<br>`;
+    let msg = `🔍 מחפש: מכלול "${unit}"`;
+    if (branchFilter) msg += ` + ענף "${branchFilter}"`;
+    msg += ` | נמצאו: ${filtered.length} אנשים`;
     
-    if (branchFilter) {
-      msg += `• סינון ענף ("${branchFilter}"): נשארו ${filtered.length} אנשים<br>`;
-    }
-
     if (filtered.length === 0 && staff.length > 0) {
-      msg += `<div style="margin-top:8px; padding:5px; background:#f8d7da; color:#721c24; border-radius:4px">`;
-      msg += `⚠️ לא נמצאו אנשים מתאימים! <br>`;
-      msg += `דוגמה למכלול בגיליון: "${staff[0].unit}"<br>`;
-      msg += `<button onclick="updateStaffDatalist('${unit}', null)" style="margin-top:5px; background:#721c24; color:#white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer">בטל סינון ענף והצג הכל</button>`;
-      msg += `</div>`;
+      msg += `<br>⚠️ אי-התאמה! דוגמה למכלול בנתונים: "${staff[0].unit}"`;
     }
     debugEl.innerHTML = msg;
+  }
+
+  if (branchFilter) {
+    filtered = filtered.filter(p => p.branch === branchFilter);
   }
 
   let datalist = document.getElementById('staff-list');
@@ -3118,12 +3106,13 @@ function buildStaffFormDays(){
   const weekLabel = document.getElementById('staff-week-select').value;
   const dates = getWeekDates(weekLabel);
 
+  // Update datalist for current department
+  updateStaffDatalist(staffDept, 'מפקדת הנפה');
+
   const section = document.createElement('div');
   section.className = 'day-section';
   section.innerHTML = `
-    <div id="staff-debug-status" style="background:#fff3cd; color:#856404; padding:12px; font-size:13px; border-radius:8px; margin-bottom:15px; border:1px solid #ffeeba; line-height:1.5">
-      טוען נתוני סנכרון...
-    </div>
+    <div id="staff-debug-status" style="background:#fff3cd; color:#856404; padding:8px; font-size:12px; border-radius:4px; margin-bottom:10px; display:none; border:1px solid #ffeeba"></div>
     <div class="day-header open" onclick="toggleDay(this)">
       <div class="day-title"><span>👥 משמרות ${esc(staffDept)}</span></div>
       <div style="display:flex;align-items:center;gap:10px">
@@ -3159,9 +3148,6 @@ function buildStaffFormDays(){
       </div>
     </div>`;
   container.appendChild(section);
-
-  // Update datalist AFTER the debug box is in the DOM
-  updateStaffDatalist(staffDept, 'מפקדת הנפה');
 
   // Initialize with at least one input per shift
   container.querySelectorAll('.staff-inputs-container').forEach(cont => {
