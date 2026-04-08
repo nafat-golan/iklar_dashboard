@@ -7,6 +7,7 @@
 
 const SHIFTS_SHEET = 'shifts';
 const EFFORTS_SHEET = 'efforts';
+const STAFF_SHEET = 'staff';
 const CONFIG_SHEET = 'config';
 
 // ─── Read secret from config sheet (after 3rd --- separator) ───
@@ -93,6 +94,9 @@ function doPost(e) {
       case 'reorderEfforts':
         result = reorderEfforts(body);
         break;
+      case 'updateStaff':
+        result = updateStaff(body);
+        break;
       default:
         result = { error: 'Unknown action: ' + action };
     }
@@ -120,6 +124,22 @@ function getConfig() {
   // We also look for an "efforts" section
   const departments = [];
 
+  // Read staff data
+  const staff = [];
+  const staffWs = ss.getSheetByName(STAFF_SHEET);
+  if (staffWs && staffWs.getLastRow() >= 2) {
+    const sData = staffWs.getDataRange().getValues();
+    for (let i = 1; i < sData.length; i++) {
+      staff.push({
+        name: String(sData[i][0] || '').trim(),
+        branch: String(sData[i][1] || '').trim(),
+        unit: String(sData[i][2] || '').trim(),
+        role: String(sData[i][3] || '').trim(),
+        phone: String(sData[i][4] || '').trim()
+      });
+    }
+  }
+
   let section = 'units';
   for (let i = 1; i < data.length; i++) {
     const col0 = String(data[i][0] || '').trim();
@@ -146,7 +166,7 @@ function getConfig() {
     }
   }
 
-  return { units, efforts, departments };
+  return { units, efforts, departments, staff };
 }
 
 // ─── Validate Gate Code ──────────────────────────────────
@@ -587,6 +607,42 @@ function reorderEfforts(body) {
   return { success: true };
 }
 
+// ─── Update Staff (Contacts) ───────────────────────────────
+function updateStaff(body) {
+  const { index, contact } = body;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let ws = ss.getSheetByName(STAFF_SHEET);
+
+  if (!ws) {
+    ws = ss.insertSheet(STAFF_SHEET);
+    ws.appendRow(['name', 'branch', 'unit', 'role', 'phone']);
+  }
+
+  const rowData = [
+    contact.name || '',
+    contact.branch || '',
+    contact.unit || '',
+    contact.role || '',
+    contact.phone || ''
+  ];
+
+  if (index === null || index === undefined || index === '') {
+    // Add new
+    ws.appendRow(rowData);
+  } else {
+    // Update existing (index is 0-based from array, so row is index + 2)
+    const row = parseInt(index) + 2;
+    if (row <= ws.getLastRow()) {
+      ws.getRange(row, 1, 1, 5).setValues([rowData]);
+    } else {
+      ws.appendRow(rowData);
+    }
+  }
+
+  SpreadsheetApp.flush();
+  return { success: true };
+}
+
 // ─── Initial Setup Helper ──────────────────────────────────
 // Run this once to create the config + plans sheets
 function setupSheets() {
@@ -643,6 +699,16 @@ function setupSheets() {
   }
   efforts.clear();
   efforts.appendRow(['week', 'unit', 'day', 'row_type', 'row_name', 'content', 'timestamp', 'status', 'followup_note', 'followup_ts']);
+
+  // Staff sheet
+  let staff = ss.getSheetByName(STAFF_SHEET);
+  if (!staff) {
+    staff = ss.insertSheet(STAFF_SHEET);
+  }
+  staff.clear();
+  staff.appendRow(['name', 'branch', 'unit', 'role', 'phone']);
+  staff.appendRow(['ישראל ישראלי', 'מפקדת הנפה', 'אג"ם', 'קמב"ץ', '050-1234567']);
+  staff.appendRow(['שרה כהן', 'רשויות', 'קצרין', 'מנהלת מכלול', '052-7654321']);
 
   SpreadsheetApp.flush();
   Logger.log('Setup complete!');
