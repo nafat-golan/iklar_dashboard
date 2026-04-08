@@ -24,7 +24,7 @@ a{color:inherit;text-decoration:none}
 
 /* ─── Main Nav ──────────────────────────────────────────── */
 .main-nav{background:#3a4f22;padding:0 28px;display:flex;align-items:stretch;gap:0}
-.nav-btn{background:none;border:none;color:#9cba70;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;border-bottom:3px solid transparent;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.nav-btn{background:none;border:none;color:#9cba70;padding:12px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;border-bottom:3px solid transparent;display:flex;align-items:center;gap:6px;white-space:nowrap}
 .nav-btn:hover{color:#fff;background:rgba(255,255,255,.06)}
 .nav-btn.active{color:#c9a227;border-bottom-color:#c9a227;background:rgba(255,255,255,.05)}
 
@@ -96,7 +96,15 @@ a{color:inherit;text-decoration:none}
 .shift-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0}
 .shift-field .shift-label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;margin-bottom:4px}
 .shift-field .shift-label.boker{color:#b8860b}
-.shift-field .shift-label.erev{color:#3949ab}
+.staff-input-wrapper { display: flex; gap: 4px; margin-bottom: 4px; align-items: center; }
+.staff-input { flex: 1; padding: 6px 10px; border: 1.5px solid #ddd; border-radius: 6px; font-size: 13px; }
+.staff-input:focus { outline: none; border-color: #c9a227; }
+.remove-staff-btn { background: #fee2e2; color: #ef4444; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+.remove-staff-btn:hover { background: #fecaca; }
+/* Hide remove button if it's the only staff input in the container */
+.staff-inputs-container .staff-input-wrapper:only-child .remove-staff-btn { display: none; }
+.add-staff-btn { background: #f3f4f6; color: #4b5563; border: 1px dashed #d1d5db; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 4px; transition: all 0.2s; }
+.add-staff-btn:hover { background: #e5e7eb; border-color: #9ca3af; }
 
 .form-actions{text-align:center;padding:20px 0}
 .form-actions .btn{font-size:16px;padding:12px 40px}
@@ -328,7 +336,58 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
 @media(max-width:900px){.radar-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.radar-grid{grid-template-columns:1fr}}
 
-/* ─── Settings Section ──────────────────────────────────── */
+/* ─── Contacts Section ───────────────────────────────────── */
+.contacts-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+.contacts-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.search-input { padding: 8px 14px; border: 2px solid #bfb090; border-radius: 8px; font-size: 14px; width: 250px; }
+.view-toggle { display: flex; background: #e8e0cc; border-radius: 8px; padding: 4px; gap: 4px; }
+.toggle-btn { padding: 6px 12px; border-radius: 6px; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 700; color: #666; transition: all 0.2s; }
+.toggle-btn.active { background: #fff; color: #2d3d1e; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+/* Table View */
+.contacts-table-wrap { background: #fff; border-radius: 10px; border: 1.5px solid #e8e0cc; overflow-x: auto; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.contacts-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+.contacts-table th { background: #f7f3ea; padding: 12px 16px; text-align: right; font-size: 13px; font-weight: 700; color: #2d3d1e; border-bottom: 2px solid #e8e0cc; }
+.contacts-table td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.contacts-table tr:hover { background: #fafafa; }
+.contacts-table tr:last-child td { border-bottom: none; }
+
+/* Card View */
+.contacts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.contact-card { background: #fff; border-radius: 12px; border: 1.5px solid #e8e0cc; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); position: relative; transition: transform 0.2s; }
+.contact-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.contact-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.contact-card-avatar { width: 48px; height: 48px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #2d3d1e; font-weight: 700; }
+.contact-card-name { font-size: 16px; font-weight: 700; color: #2d3d1e; }
+.contact-card-role { font-size: 12px; color: #888; }
+.contact-card-info { display: flex; flex-direction: column; gap: 8px; }
+.contact-info-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; }
+.contact-info-item .icon { font-size: 14px; opacity: 0.7; }
+.contact-card-actions { display: flex; gap: 8px; margin-top: 16px; border-top: 1px solid #f0f0f0; padding-top: 12px; }
+
+/* Modal */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+.modal-overlay.active { display: flex; }
+.modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; animation: modalIn 0.3s ease-out; }
+@keyframes modalIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header { background: #2d3d1e; color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+.modal-title { font-size: 18px; font-weight: 700; }
+.modal-close { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
+.modal-close:hover { opacity: 1; }
+.modal-body { padding: 24px; }
+.modal-footer { padding: 16px 24px; background: #f9f9f9; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 12px; }
+
+.form-field { margin-bottom: 16px; }
+.form-field label { display: block; font-size: 13px; font-weight: 700; color: #555; margin-bottom: 6px; }
+.form-field input, .form-field select { width: 100%; padding: 10px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; }
+.form-field input:focus, .form-field select:focus { outline: none; border-color: #c9a227; }
+
+.phone-link { color: #2d3d1e; font-weight: 600; text-decoration: underline; }
+.phone-link:hover { color: #c9a227; }
+
+.badge { padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.badge-unit { background: #e8f0fe; color: #1a73e8; }
+.badge-branch { background: #fef7e0; color: #f9ab00; }
 .settings-login{max-width:400px;margin:40px auto;text-align:center}
 .settings-login h2{font-size:22px;color:#2d3d1e;margin-bottom:8px}
 .settings-login p{font-size:14px;color:#888;margin-bottom:20px}
@@ -417,6 +476,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
   <button class="nav-btn" data-section="units-section" onclick="switchSection('units-section')">👁️ תצוגת יחידות</button>
   <button class="nav-btn active" data-section="manager-section" onclick="switchSection('manager-section')">📊 תצוגת מנהל</button>
   <button class="nav-btn" data-section="staff-section" onclick="switchSection('staff-section')">🏢 משמרות מכלולים</button>
+  <button class="nav-btn" data-section="contacts-section" onclick="switchSection('contacts-section')">📞 אלפון</button>
   <button class="nav-btn" data-section="settings-section" onclick="switchSection('settings-section')">⚙️ הגדרות</button>
 </div>
 
@@ -488,6 +548,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
       <div class="day-filter-bar" id="day-filter-bar" style="display:none">
         <span class="day-filter-label">יום:</span>
       </div>
+      <button class="btn btn-outline" style="padding:5px 14px; font-size:12px; margin-right:auto" onclick="exportUnitsView()">📥 ייצוא תצוגה</button>
     </div>
     <div id="unit-content"></div>
   </div>
@@ -543,6 +604,7 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
         <button class="view-pill active" onclick="setManagerView('matrix')">📊 מטריצה</button>
         <button class="view-pill" onclick="setManagerView('charts')">📈 גרפים</button>
       </div>
+      <button class="btn btn-outline" style="padding:5px 14px; font-size:12px;" onclick="exportToCSV()">📥 ייצוא ל-CSV</button>
     </div>
     <div id="manager-content"></div>
   </div>
@@ -597,6 +659,36 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
     </div>
   </div>
 
+  <!-- ── CONTACTS SECTION ───────────────────────────────── -->
+  <div id="contacts-section" class="section">
+    <div class="contacts-header">
+      <h2>📞 אלפון אנשי קשר</h2>
+      <div class="contacts-controls">
+        <input type="text" class="search-input" id="contacts-search" placeholder="חיפוש שם או תפקיד..." oninput="filterContacts()">
+        
+        <select class="search-input" style="width:160px" id="contacts-branch-filter" onchange="filterContacts()">
+          <option value="">כל הארגונים</option>
+        </select>
+
+        <select class="search-input" style="width:160px" id="contacts-unit-filter" onchange="filterContacts()">
+          <option value="">כל המכלולים</option>
+        </select>
+
+        <button class="btn btn-outline" onclick="resetContactsFilters()" title="איפוס סינונים">🔄 איפוס</button>
+        
+        <div class="view-toggle">
+          <button class="toggle-btn active" id="view-table-btn" onclick="setContactsView('table')">🗂️ טבלה</button>
+          <button class="toggle-btn" id="view-grid-btn" onclick="setContactsView('grid')">📱 כרטיסיות</button>
+        </div>
+        <button class="btn btn-success" onclick="openContactModal()">+ הוסף איש קשר</button>
+      </div>
+    </div>
+
+    <div id="contacts-container">
+      <!-- Table or Grid will be rendered here -->
+    </div>
+  </div>
+
   <!-- ── SETTINGS SECTION ──────────────────────────────── -->
   <div id="settings-section" class="section">
     <!-- Admin login step -->
@@ -634,6 +726,51 @@ body.is-loading .content{opacity:.45;pointer-events:none;transition:opacity .15s
 <!-- ═════════════════════════════════════════════════════════ -->
 <!-- JAVASCRIPT                                                -->
 <!-- ═════════════════════════════════════════════════════════ -->
+<!-- ── CONTACT MODAL ────────────────────────────────────── -->
+<div class="modal-overlay" id="contact-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="contact-modal-title">הוספת איש קשר</div>
+      <button class="modal-close" onclick="closeContactModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="contact-form">
+        <input type="hidden" id="contact-id">
+        <div class="form-field">
+          <label>שם מלא</label>
+          <input type="text" id="contact-name" required placeholder="לדוגמה: ישראל ישראלי">
+        </div>
+        <div class="form-field">
+          <label>ארגון על (Branch)</label>
+          <select id="contact-branch">
+            <option value="מפקדת הנפה">מפקדת הנפה</option>
+            <option value="רשויות">רשויות</option>
+            <option value="גופים חוברים">גופים חוברים</option>
+            <option value="אחר">אחר</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>מכלול / יחידה (Unit)</label>
+          <input type="text" id="contact-unit" list="unit-list" required placeholder="לדוגמה: אג״ם">
+          <datalist id="unit-list"></datalist>
+        </div>
+        <div class="form-field">
+          <label>תפקיד</label>
+          <input type="text" id="contact-role" placeholder="לדוגמה: קמב״ץ">
+        </div>
+        <div class="form-field">
+          <label>טלפון</label>
+          <input type="tel" id="contact-phone" placeholder="לדוגמה: 050-1234567" direction="ltr">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeContactModal()">ביטול</button>
+      <button class="btn btn-primary" id="contact-save-btn" onclick="saveContact()">שמור איש קשר</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ┌──────────────────────────────────────────────────────────┐
 // │ CONFIGURATION                                             │
@@ -694,7 +831,7 @@ const _b='CRM989JoyIJnmPwUMktfooMtWcTNJJ';
 const API_URL = 'https://script.google.com/macros/s/'+_a+_b+'/exec';
 
 // ─── Demo mode: set to true to use built-in sample data ────
-const DEMO_MODE = !API_URL || API_URL.includes('YOUR_APPS_SCRIPT');
+const DEMO_MODE = false;
 
 // ─── Constants ─────────────────────────────────────────────
 const DAYS = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
@@ -772,9 +909,10 @@ function getDemoWeeks(){
 }
 
 function getDemoPlans(week){
-  const plans = [];
+  const shifts = [];
+  const efforts = [];
   const units = ['בוקעתא','מסעדה','מגדל'];
-  const efforts = ['חוסן','הסברה','שוטף'];
+  const effortTypes = ['חוסן','הסברה','שוטף'];
   const sampleContent = [
     'סיור במתחמי הקניות ובדיקת רצף תפקודי\nביצוע שאלוני חוסן - תשאול לתושבים',
     'הנגשת מידע לקשישים מגיל 60+ עד הבית\nמפגש זום עם צוות החינוכי',
@@ -783,12 +921,12 @@ function getDemoPlans(week){
   units.forEach((unit,ui) => {
     DAYS.slice(0,6).forEach((day,di) => {
       if(di % 2 === 0 || ui === 0){
-        plans.push({week,unit,day,rowType:'shift',rowName:'בוקר',content:'צוות א',timestamp:'',status:'',followupNote:'',followupTs:''});
-        plans.push({week,unit,day,rowType:'shift',rowName:'ערב',content:'צוות ב',timestamp:'',status:'',followupNote:'',followupTs:''});
+        shifts.push({week,unit,day,rowType:'shift',rowName:'בוקר',content:'צוות א',timestamp:'',status:'',followupNote:'',followupTs:''});
+        shifts.push({week,unit,day,rowType:'shift',rowName:'ערב',content:'צוות ב',timestamp:'',status:'',followupNote:'',followupTs:''});
       }
-      efforts.forEach((eff,ei) => {
+      effortTypes.forEach((eff,ei) => {
         if((di+ei+ui)%3 !== 2){
-          plans.push({week,unit,day,rowType:'effort',rowName:eff,content:sampleContent[ei],timestamp:'',status:'',followupNote:'',followupTs:''});
+          efforts.push({week,unit,day,rowType:'effort',rowName:eff,content:sampleContent[ei],timestamp:'',status:'',followupNote:'',followupTs:''});
         }
       });
     });
@@ -800,13 +938,13 @@ function getDemoPlans(week){
   depts.forEach((dept,di) => {
     DAYS.slice(0,6).forEach((day,dayIdx) => {
       if(dayIdx % 2 === 0 || di < 2){
-        plans.push({week,unit:dept,day,rowType:'staff-shift',rowName:'בוקר',content:staffNames[di][0],timestamp:'',status:'',followupNote:'',followupTs:''});
-        plans.push({week,unit:dept,day,rowType:'staff-shift',rowName:'ערב',content:staffNames[di][1],timestamp:'',status:'',followupNote:'',followupTs:''});
+        shifts.push({week,unit:dept,day,rowType:'staff-shift',rowName:'בוקר',content:staffNames[di][0],timestamp:'',status:'',followupNote:'',followupTs:''});
+        shifts.push({week,unit:dept,day,rowType:'staff-shift',rowName:'ערב',content:staffNames[di][1],timestamp:'',status:'',followupNote:'',followupTs:''});
       }
     });
   });
 
-  return {plans};
+  return {shifts, efforts};
 }
 
 function demoValidateKey(key){
@@ -832,7 +970,7 @@ async function apiGet(params){
     switch(params.action){
       case 'config': return config.units && config.units.length ? {units:config.units,efforts:config.efforts} : getDemoConfig();
       case 'weeks': return getDemoWeeks();
-      case 'plans': return getDemoPlans(params.week||currentWeek);
+      case 'data': return getDemoPlans(params.week||currentWeek);
       case 'validate': return demoValidateKey(params.key);
       case 'validateDept': return demoValidateDeptKey(params.key);
       case 'validateGate': return {valid: params.code==='demo'};
@@ -1041,8 +1179,8 @@ async function refreshData(){
 
 async function loadPlans(){
   if(!currentWeek) return;
-  const res = await apiGet({action:'plans',week:currentWeek});
-  currentPlans = res.plans || [];
+  const res = await apiGet({action:'data',week:currentWeek});
+  currentPlans = [...(res.shifts || []), ...(res.efforts || [])];
   renderCurrentSection();
 }
 
@@ -1060,9 +1198,9 @@ function switchSection(id){
   document.querySelectorAll('.nav-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.section===id);
   });
-  // Hide global week bar on form/followup/settings sections, and staff submit
+  // Hide global week bar on form/followup/settings/contacts sections, and staff submit
   const weekBar = document.getElementById('week-bar');
-  const hideWeekBar = id==='form-section'||id==='followup-section'||id==='settings-section'||(id==='staff-section'&&staffView==='submit');
+  const hideWeekBar = id==='form-section'||id==='followup-section'||id==='settings-section'||id==='contacts-section'||(id==='staff-section'&&staffView==='submit');
   weekBar.style.display = hideWeekBar ? 'none' : 'flex';
   if(!hideWeekBar) buildWeekChips();
   // Hide sticky buttons when leaving their sections
@@ -1081,6 +1219,7 @@ function renderCurrentSection(){
       break;
     case 'settings-section': renderSettingsEffortList(); break;
     case 'staff-section': renderStaffSection(); break;
+    case 'contacts-section': renderContactsSection(); break;
   }
 }
 
@@ -1112,8 +1251,251 @@ async function selectWeek(label){
 }
 
 // ═══════════════════════════════════════════════════════════
-// FORM SECTION
+// CONTACTS SECTION
 // ═══════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+// CONTACTS SECTION
+// ═══════════════════════════════════════════════════════════
+
+let contactsView = 'table';
+let contactsFilter = '';
+let contactsBranchFilter = '';
+let contactsUnitFilter = '';
+
+function setContactsView(view){
+  contactsView = view;
+  document.getElementById('view-table-btn').classList.toggle('active', view==='table');
+  document.getElementById('view-grid-btn').classList.toggle('active', view==='grid');
+  renderContactsSection();
+}
+
+function filterContacts(){
+  const oldBranch = contactsBranchFilter;
+  contactsFilter = document.getElementById('contacts-search').value.toLowerCase();
+  contactsBranchFilter = document.getElementById('contacts-branch-filter').value;
+  contactsUnitFilter = document.getElementById('contacts-unit-filter').value;
+
+  // If branch changed, reset unit filter if it's no longer valid for the new branch
+  if (contactsBranchFilter !== oldBranch && contactsUnitFilter) {
+    const staff = config.staff || [];
+    const validUnits = [...new Set(staff.filter(p => !contactsBranchFilter || p.branch === contactsBranchFilter).map(p => p.unit))];
+    if (!validUnits.includes(contactsUnitFilter)) {
+      contactsUnitFilter = '';
+      document.getElementById('contacts-unit-filter').value = '';
+    }
+  }
+  
+  renderContactsSection();
+}
+
+function resetContactsFilters(){
+  document.getElementById('contacts-search').value = '';
+  document.getElementById('contacts-branch-filter').value = '';
+  document.getElementById('contacts-unit-filter').value = '';
+  contactsFilter = '';
+  contactsBranchFilter = '';
+  contactsUnitFilter = '';
+  renderContactsSection();
+}
+
+function getWhatsAppLink(phone){
+  if(!phone) return '';
+  // Convert 0501234567 to 972501234567
+  const cleanPhone = phone.replace(/\D/g,'').replace(/^0/,'972');
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  // web.whatsapp.com/send skips the landing page on desktop
+  return isMobile ? `https://wa.me/${cleanPhone}` : `https://web.whatsapp.com/send?phone=${cleanPhone}`;
+}
+
+function renderContactsSection(){
+  const container = document.getElementById('contacts-container');
+  const staff = config.staff || [];
+  
+  // Update dropdown options dynamically
+  const branches = [...new Set(staff.map(p => p.branch))].sort();
+  
+  // Cascading: Units dropdown depends on selected branch
+  const unitsForDropdown = contactsBranchFilter 
+    ? staff.filter(p => p.branch === contactsBranchFilter)
+    : staff;
+  const units = [...new Set(unitsForDropdown.map(p => p.unit))].sort();
+  
+  const branchSelect = document.getElementById('contacts-branch-filter');
+  const unitSelect = document.getElementById('contacts-unit-filter');
+  
+  const currentBranch = branchSelect.value;
+  const currentUnit = unitSelect.value;
+  
+  branchSelect.innerHTML = '<option value="">כל הארגונים</option>' + branches.map(b => `<option value="${esc(b)}" ${b===currentBranch?'selected':''}>${esc(b)}</option>`).join('');
+  unitSelect.innerHTML = '<option value="">כל המכלולים</option>' + units.map(u => `<option value="${esc(u)}" ${u===currentUnit?'selected':''}>${esc(u)}</option>`).join('');
+
+  let filtered = staff.map((p, originalIdx) => ({...p, originalIdx})).filter(p => {
+    const searchStr = (p.name + ' ' + (p.role||'')).toLowerCase();
+    const matchesSearch = searchStr.includes(contactsFilter);
+    const matchesBranch = !contactsBranchFilter || p.branch === contactsBranchFilter;
+    const matchesUnit = !contactsUnitFilter || p.unit === contactsUnitFilter;
+    return matchesSearch && matchesBranch && matchesUnit;
+  });
+
+  // Default sort by name
+  filtered.sort((a, b) => a.name.localeCompare(b.name, 'he'));
+
+  // Update unit datalist for modal (all units)
+  const allUnits = [...new Set(staff.map(p => p.unit))].sort();
+  document.getElementById('unit-list').innerHTML = allUnits.map(u => `<option value="${esc(u)}">`).join('');
+
+  if(contactsView === 'table'){
+    container.innerHTML = `
+      <div class="contacts-table-wrap">
+        <table class="contacts-table">
+          <thead>
+            <tr>
+              <th>שם מלא</th>
+              <th>ארגון על</th>
+              <th>מכלול / יחידה</th>
+              <th>תפקיד</th>
+              <th>טלפון</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.map((p) => `
+              <tr>
+                <td style="font-weight:700">${esc(p.name)}</td>
+                <td><span class="badge badge-branch">${esc(p.branch)}</span></td>
+                <td><span class="badge badge-unit">${esc(p.unit)}</span></td>
+                <td>${esc(p.role || '—')}</td>
+                <td>
+                  ${p.phone ? `<a href="tel:${p.phone}" class="phone-link" dir="ltr">${esc(p.phone)}</a>` : '—'}
+                </td>
+                <td>
+                  <div style="display:flex;gap:8px">
+                    <button class="btn btn-outline" style="padding:4px 8px;font-size:12px" onclick="openContactModal(${p.originalIdx})">ערוך</button>
+                    ${p.phone ? `<a href="${getWhatsAppLink(p.phone)}" target="_blank" class="btn btn-success" style="padding:4px 8px;font-size:12px">WhatsApp</a>` : ''}
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="contacts-grid">
+        ${filtered.map((p) => `
+          <div class="contact-card">
+            <div class="contact-card-header">
+              <div class="contact-card-avatar">${esc(p.name.charAt(0))}</div>
+              <div>
+                <div class="contact-card-name">${esc(p.name)}</div>
+                <div class="contact-card-role">${esc(p.role || '—')}</div>
+              </div>
+            </div>
+            <div class="contact-card-info">
+              <div class="contact-info-item">
+                <span class="icon">🏢</span>
+                <span class="badge badge-branch">${esc(p.branch)}</span>
+              </div>
+              <div class="contact-info-item">
+                <span class="icon">👥</span>
+                <span class="badge badge-unit">${esc(p.unit)}</span>
+              </div>
+              ${p.phone ? `
+                <div class="contact-info-item">
+                  <span class="icon">📞</span>
+                  <a href="tel:${p.phone}" class="phone-link" dir="ltr">${esc(p.phone)}</a>
+                </div>
+              ` : ''}
+            </div>
+            <div class="contact-card-actions">
+              <button class="btn btn-outline" style="flex:1;font-size:12px" onclick="openContactModal(${p.originalIdx})">ערוך</button>
+              ${p.phone ? `
+                <a href="${getWhatsAppLink(p.phone)}" target="_blank" class="btn btn-success" style="flex:1;font-size:12px;text-align:center">WhatsApp</a>
+              ` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+}
+
+function openContactModal(idx = null){
+  const modal = document.getElementById('contact-modal');
+  const title = document.getElementById('contact-modal-title');
+  const form = document.getElementById('contact-form');
+  
+  form.reset();
+  document.getElementById('contact-id').value = idx !== null ? idx : '';
+  
+  if(idx !== null){
+    const p = config.staff[idx];
+    title.textContent = 'עריכת איש קשר';
+    document.getElementById('contact-name').value = p.name;
+    document.getElementById('contact-branch').value = p.branch;
+    document.getElementById('contact-unit').value = p.unit;
+    document.getElementById('contact-role').value = p.role || '';
+    document.getElementById('contact-phone').value = p.phone || '';
+  } else {
+    title.textContent = 'הוספת איש קשר';
+  }
+  
+  modal.classList.add('active');
+}
+
+function closeContactModal(){
+  document.getElementById('contact-modal').classList.remove('active');
+}
+
+async function saveContact(){
+  const idx = document.getElementById('contact-id').value;
+  const name = document.getElementById('contact-name').value.trim();
+  const branch = document.getElementById('contact-branch').value;
+  const unit = document.getElementById('contact-unit').value.trim();
+  const role = document.getElementById('contact-role').value.trim();
+  const phone = document.getElementById('contact-phone').value.trim();
+
+  if(!name || !unit){
+    showToast('❌ נא למלא שם ויחידה');
+    return;
+  }
+
+  const btn = document.getElementById('contact-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'שומר...';
+
+  const contactData = { name, branch, unit, role, phone };
+  
+  try {
+    const res = await apiPost({
+      action: 'updateStaff',
+      index: idx === '' ? null : parseInt(idx),
+      contact: contactData
+    });
+
+    if(res.success){
+      showToast('✅ איש קשר נשמר בהצלחה');
+      // Update local config
+      if(idx === ''){
+        config.staff.push(contactData);
+      } else {
+        config.staff[idx] = contactData;
+      }
+      localStorage.setItem(CACHE_KEY_CONFIG, JSON.stringify(config));
+      renderContactsSection();
+      closeContactModal();
+    } else {
+      showToast('❌ שגיאה בשמירה: ' + (res.error || 'Unknown error'));
+    }
+  } catch(e) {
+    showToast('❌ שגיאה בתקשורת עם השרת');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'שמור איש קשר';
+  }
+}
 
 async function validateUnitKey(){
   const key = document.getElementById('key-input').value.trim();
@@ -1183,13 +1565,16 @@ function buildFormDays(){
   const dates = getWeekDates(weekLabel);
   const efforts = config.efforts || [];
 
+  // Update datalist for current unit
+  updateStaffDatalist(formUnit);
+
   // ── Shifts section ──
   const shiftsSection = document.createElement('div');
   shiftsSection.className = 'day-section';
   shiftsSection.innerHTML = `
     <div class="day-header open" onclick="toggleDay(this)">
       <div class="day-title">
-        <span>👥 משמרות</span>
+        <span>👥 שיבוץ משמרות</span>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <span class="filled-count" data-effort-count="shifts"></span>
@@ -1206,11 +1591,17 @@ function buildFormDays(){
             <div class="shift-fields">
               <div class="shift-field">
                 <div class="shift-label boker">☀️ בוקר</div>
-                <textarea class="field-textarea" data-day="${dayName}" data-type="shift" data-name="בוקר" placeholder="משמרת בוקר..." rows="2"></textarea>
+                <div class="staff-inputs-container" data-day="${dayName}" data-type="shift" data-name="בוקר">
+                  <!-- Inputs will be added here -->
+                </div>
+                <button class="add-staff-btn" onclick="addStaffInput(this)">+ הוסף אדם</button>
               </div>
               <div class="shift-field">
                 <div class="shift-label erev">🌙 ערב</div>
-                <textarea class="field-textarea" data-day="${dayName}" data-type="shift" data-name="ערב" placeholder="משמרת ערב..." rows="2"></textarea>
+                <div class="staff-inputs-container" data-day="${dayName}" data-type="shift" data-name="ערב">
+                  <!-- Inputs will be added here -->
+                </div>
+                <button class="add-staff-btn" onclick="addStaffInput(this)">+ הוסף אדם</button>
               </div>
             </div>
           </div>`;
@@ -1218,6 +1609,11 @@ function buildFormDays(){
       </div>
     </div>`;
   container.appendChild(shiftsSection);
+
+  // Initialize with at least one input per shift
+  container.querySelectorAll('.staff-inputs-container').forEach(cont => {
+    addStaffInput(null, cont);
+  });
 
   // ── One section per effort ──
   efforts.forEach((eff, ei) => {
@@ -1264,38 +1660,98 @@ function onFormWeekChange(){
   loadExistingFormData();
 }
 
+function addStaffInput(btn, containerOverride) {
+  const container = containerOverride || btn.previousElementSibling;
+  const isStaffSection = container.closest('#staff-section') !== null;
+  const callback = isStaffSection ? 'updateStaffFilledCount()' : 'updateFormFilledCounts()';
+  
+  const wrapper = document.createElement('div');
+  wrapper.className = 'staff-input-wrapper';
+  wrapper.innerHTML = `
+    <input type="text" class="staff-input" list="staff-list" placeholder="בחר שם..." oninput="${callback}">
+    <button class="remove-staff-btn" onclick="this.parentElement.remove(); ${callback}">×</button>
+  `;
+  container.appendChild(wrapper);
+}
+
+function updateStaffDatalist(unit, branchFilter) {
+  const staff = config.staff || [];
+  let filtered = staff.filter(p => p.unit === unit);
+  if (branchFilter) {
+    filtered = filtered.filter(p => p.branch === branchFilter);
+  }
+
+  let datalist = document.getElementById('staff-list');
+  if(!datalist){
+    datalist = document.createElement('datalist');
+    datalist.id = 'staff-list';
+    document.body.appendChild(datalist);
+  }
+  datalist.innerHTML = filtered.map(p => `<option value="${esc(p.name)}">`).join('');
+}
+
 async function loadExistingFormData(){
   const weekLabel = document.getElementById('form-week-select').value;
   showLoader();
   try{
-  const res = await apiGet({action:'plans',week:weekLabel});
-  const plans = (res.plans||[]).filter(p=>p.unit===formUnit);
+    const res = await apiGet({action:'data',week:weekLabel});
+    const plans = [...(res.shifts||[]), ...(res.efforts||[])].filter(p=>p.unit===formUnit);
 
-  // Fill textareas
-  document.querySelectorAll('#form-days .field-textarea').forEach(ta => {
-    const day = ta.dataset.day;
-    const type = ta.dataset.type;
-    const name = ta.dataset.name;
-    const match = plans.find(p=>p.day===day && p.rowType===type && p.rowName===name);
-    ta.value = match ? match.content : '';
-  });
+    // Clear and reset shift containers
+    document.querySelectorAll('.staff-inputs-container').forEach(cont => {
+      cont.innerHTML = '';
+      addStaffInput(null, cont);
+    });
 
-  updateFormFilledCounts();
+    // Clear textareas
+    document.querySelectorAll('#form-days .field-textarea').forEach(ta => ta.value = '');
+
+    plans.forEach(p => {
+      if(p.rowType === 'shift'){
+        const cont = Array.from(document.querySelectorAll('.staff-inputs-container')).find(el => 
+          el.dataset.day === p.day && el.dataset.name === p.rowName
+        );
+        if(cont){
+          const names = p.content.split(',').map(n => n.trim()).filter(n => n);
+          if(names.length > 0) cont.innerHTML = ''; // Clear default
+          names.forEach(name => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'staff-input-wrapper';
+            wrapper.innerHTML = `
+              <input type="text" class="staff-input" list="staff-list" value="${esc(name)}" oninput="updateFormFilledCounts()">
+              <button class="remove-staff-btn" onclick="this.parentElement.remove(); updateFormFilledCounts()">×</button>
+            `;
+            cont.appendChild(wrapper);
+          });
+        }
+      } else {
+        const ta = Array.from(document.querySelectorAll('.field-textarea')).find(el => 
+          el.dataset.day === p.day && el.dataset.name === p.rowName
+        );
+        if(ta) ta.value = p.content;
+      }
+    });
+
+    updateFormFilledCounts();
   }finally{ hideLoader(); }
 }
 
 function updateFormFilledCounts(){
   const efforts = config.efforts || [];
   // Shifts section count
-  const shiftFields = document.querySelectorAll('#form-days .field-textarea[data-type="shift"]');
+  const shiftContainers = document.querySelectorAll('#form-days .staff-inputs-container');
   let shiftFilled = 0;
-  shiftFields.forEach(f => { if(f.value.trim()) shiftFilled++; });
+  shiftContainers.forEach(cont => {
+    const hasValue = Array.from(cont.querySelectorAll('.staff-input')).some(i => i.value.trim());
+    if(hasValue) shiftFilled++;
+  });
   const shiftEl = document.querySelector('[data-effort-count="shifts"]');
-  if(shiftEl) shiftEl.textContent = shiftFilled > 0 ? `${shiftFilled}/${shiftFields.length}` : '';
+  if(shiftEl) shiftEl.textContent = shiftFilled > 0 ? `${shiftFilled}/${shiftContainers.length}` : '';
 
   // Per-effort count
+  const allFields = Array.from(document.querySelectorAll('#form-days .field-textarea'));
   efforts.forEach((eff, ei) => {
-    const fields = document.querySelectorAll(`#form-days .field-textarea[data-name="${eff.name}"][data-type="effort"]`);
+    const fields = allFields.filter(f => f.dataset.name === eff.name && f.dataset.type === 'effort');
     let filled = 0;
     fields.forEach(f => { if(f.value.trim()) filled++; });
     const el = document.querySelector(`[data-effort-count="${ei}"]`);
@@ -1322,6 +1778,22 @@ async function submitForm(){
 
   // Collect all field data
   const rows = [];
+  
+  // Collect Shifts
+  document.querySelectorAll('.staff-inputs-container').forEach(cont => {
+    const inputs = Array.from(cont.querySelectorAll('.staff-input'));
+    const names = inputs.map(i => i.value.trim()).filter(v => v);
+    if(names.length > 0){
+      rows.push({
+        day: cont.dataset.day,
+        rowType: cont.dataset.type,
+        rowName: cont.dataset.name,
+        content: names.join(', ')
+      });
+    }
+  });
+
+  // Collect Efforts
   document.querySelectorAll('#form-days .field-textarea').forEach(ta => {
     const content = ta.value.trim();
     if(content){
@@ -1344,7 +1816,8 @@ async function submitForm(){
   btn.disabled = false;
 
   if(res.success){
-    status.textContent = '✅ התוכנית הוגשה בהצלחה! ('+res.rowCount+' שדות)';
+    const total = (res.shiftsCount || 0) + (res.effortsCount || 0);
+    status.textContent = '✅ התוכנית הוגשה בהצלחה! ('+total+' שדות)';
     status.className = 'submit-status success';
     stickyS.textContent = status.textContent;
     stickyS.className = 'submit-status success';
@@ -1435,8 +1908,8 @@ async function loadFollowupData(){
   document.getElementById('followup-stats-bar').innerHTML = '';
   showLoader();
   try{
-    const res = await apiGet({action:'plans',week:weekLabel});
-    const plans = (res.plans||[]).filter(p=>p.unit===followupUnit && p.rowType==='effort');
+    const res = await apiGet({action:'data',week:weekLabel});
+    const plans = (res.efforts||[]).filter(p=>p.unit===followupUnit);
     buildFollowupUI(plans, weekLabel);
   }finally{ hideLoader(); }
 }
@@ -1627,12 +2100,20 @@ async function submitFollowup(){
 
 function renderUnitsSection(){
   const units = config.units || [];
-  if(!currentUnitTab && units.length) currentUnitTab = units[0].name;
+  if(!currentUnitTab && units.length) currentUnitTab = 'all';
 
   // Build tabs
   const tabsEl = document.getElementById('unit-tabs');
   tabsEl.innerHTML = '';
   const submittedUnits = new Set(currentPlans.map(p=>p.unit));
+
+  // Add "Show All" tab
+  const allBtn = document.createElement('button');
+  const anyData = units.some(u => submittedUnits.has(u.name));
+  allBtn.className = 'unit-tab'+(currentUnitTab==='all'?' active':'')+(anyData?' has-data':'');
+  allBtn.innerHTML = `<span class="dot"></span>הצג הכל`;
+  allBtn.onclick = () => { currentUnitTab = 'all'; renderUnitsSection(); };
+  tabsEl.appendChild(allBtn);
 
   units.forEach(u => {
     const btn = document.createElement('button');
@@ -1686,57 +2167,107 @@ function buildDayFilter(){
 
 function renderUnitContent(){
   const el = document.getElementById('unit-content');
-  const unitPlans = currentPlans.filter(p=>p.unit===currentUnitTab);
+  const isAll = currentUnitTab === 'all';
+  const units = config.units || [];
+  const unitPlans = isAll 
+    ? currentPlans.filter(p => units.some(u => u.name === p.unit))
+    : currentPlans.filter(p=>p.unit===currentUnitTab);
 
   if(!unitPlans.length){
-    el.innerHTML = '<p class="no-data">לא הוגשה תוכנית ליחידה זו בשבוע הנבחר</p>';
+    el.innerHTML = `<p class="no-data">לא הוגשה תוכנית ${isAll ? 'לאף יחידה' : 'ליחידה זו'} בשבוע הנבחר</p>`;
     return;
   }
 
   switch(currentUnitView){
-    case 'efforts': el.innerHTML = renderEffortsView(unitPlans); break;
-    case 'shifts': el.innerHTML = renderShiftsView(unitPlans); break;
-    case 'table': el.innerHTML = renderTableView(unitPlans); break;
+    case 'efforts': el.innerHTML = renderEffortsView(unitPlans, isAll); break;
+    case 'shifts': el.innerHTML = renderShiftsView(unitPlans, isAll); break;
+    case 'table': el.innerHTML = renderTableView(unitPlans, isAll); break;
   }
 }
 
 // ── Efforts View ───────────────────────────────────────────
-function renderEffortsView(plans){
+function renderEffortsView(plans, isAll){
   const effortPlans = plans.filter(p=>p.rowType==='effort');
-  const effortNames = [...new Set(effortPlans.map(p=>p.rowName))];
+  if(!effortPlans.length) return '<p class="no-data">לא נמצאו מאמצים</p>';
 
-  if(!effortNames.length) return '<p class="no-data">לא נמצאו מאמצים</p>';
-
-  const cards = effortNames.map(name => {
-    const icon = getEffortIcon(name);
-    const items = effortPlans.filter(p=>p.rowName===name);
-    const allContent = items.map(p=>`<b>${esc(p.day)}:</b> ${esc(p.content).replace(/\n/g,'<br>')}`).join('<br>');
+  // If "All", we might want to sort by unit or just show all
+  const cards = effortPlans.map(p => {
+    const icon = getEffortIcon(p.rowName);
+    const unitLabel = isAll ? `<div style="font-size:11px; font-weight:bold; color:#c9a227; margin-bottom:4px;">📍 ${esc(p.unit)}</div>` : '';
     return `<div class="effort-card">
       <div class="effort-card-top">
         <div class="effort-icon-wrap ${icon.bg}">${icon.emoji}</div>
-        <div class="effort-name">${esc(name)}</div>
+        <div class="effort-name">${esc(p.rowName)}</div>
       </div>
-      <div class="effort-card-body"><div style="font-size:12px;line-height:1.6">${allContent}</div></div>
+      <div class="effort-card-body">
+        ${unitLabel}
+        <div style="font-size:12px;line-height:1.6">
+          <b>${esc(p.day)}:</b> ${esc(p.content).replace(/\n/g,'<br>')}
+        </div>
+      </div>
     </div>`;
   }).join('');
 
   return `<div class="card">
-    <div class="card-header"><span class="icon">🎯</span><span class="title">מאמצי היקל"ר השבועיים — ${esc(currentUnitTab)}</span></div>
+    <div class="card-header"><span class="icon">🎯</span><span class="title">מאמצי היקל"ר השבועיים — ${isAll ? 'כל היחידות' : esc(currentUnitTab)}</span></div>
     <div class="card-body"><div class="efforts-grid">${cards}</div></div>
   </div>`;
 }
 
 // ── Shifts View ────────────────────────────────────────────
-function renderShiftsView(plans){
+function renderShiftsView(plans, isAll){
   const shiftPlans = plans.filter(p=>p.rowType==='shift');
   if(!shiftPlans.length) return '<p class="no-data">לא הוגדרו משמרות</p>';
 
   const dates = getWeekDates(currentWeek);
   const activeDays = currentDayFilter==='all' ? DAYS : [currentDayFilter];
 
+  if(isAll){
+    // New Table Structure: Unit | Shift | Days...
+    const units = config.units || [];
+    const thCols = activeDays.map(d => {
+      const di = DAYS.indexOf(d);
+      return `<th><span class="day-he">${esc(d)}</span><span class="day-dt">${esc(dates[di]||'')}</span></th>`;
+    }).join('');
+
+    const rows = units.map(u => {
+      const unitPlans = shiftPlans.filter(p => p.unit === u.name);
+      if(!unitPlans.length) return '';
+
+      const unitColor = getUnitColor(u.name);
+      
+      return ['בוקר','ערב'].map(shift => {
+        const label = shift==='בוקר' 
+          ? `<td rowspan="2" style="background:#f2ede3!important; border-right:4px solid ${unitColor}; vertical-align:middle; font-weight:bold;">${esc(u.name)}</td>`
+          : '';
+        
+        const shiftLabel = `<td><div style="font-size:11px; font-weight:bold;">${shift==='בוקר'?'☀️ בוקר':'🌙 ערב'}</div></td>`;
+        
+        const cells = activeDays.map(d => {
+          const p = unitPlans.find(p => p.day === d && p.rowName === shift);
+          return `<td>${p ? formatBulletsList(p.content) : '<span style="color:#ccc">—</span>'}</td>`;
+        }).join('');
+        
+        return `<tr>${label}${shiftLabel}${cells}</tr>`;
+      }).join('');
+    }).join('');
+
+    return `<div class="card">
+      <div class="card-header"><span class="icon">🕐</span><span class="title">ריכוז משמרות שבועי — כל היחידות</span></div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap">
+          <table class="week">
+            <thead><tr><th style="width:120px">יחידה</th><th style="width:80px">משמרת</th>${thCols}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Original view for single unit
   const cols = activeDays.map(dayName => {
     const di = DAYS.indexOf(dayName);
-    const isWe = di>=5;
     const boker = shiftPlans.filter(p=>p.day===dayName&&p.rowName==='בוקר');
     const erev = shiftPlans.filter(p=>p.day===dayName&&p.rowName==='ערב');
     const bokerContent = boker.map(p=>p.content).join('\n');
@@ -1772,54 +2303,59 @@ function renderShiftsView(plans){
 }
 
 // ── Table View ─────────────────────────────────────────────
-function renderTableView(plans){
+function renderTableView(plans, isAll){
   const dates = getWeekDates(currentWeek);
   const activeDays = currentDayFilter==='all' ? DAYS : [currentDayFilter];
   const efforts = config.efforts || [];
+  const units = isAll ? (config.units || []) : [{name: currentUnitTab}];
 
   const thCols = activeDays.map(d => {
     const di = DAYS.indexOf(d);
-    const isWe = di>=5;
     return `<th><span class="day-he">${esc(d)}</span><span class="day-dt">${esc(dates[di]||'')}</span></th>`;
   }).join('');
 
-  // Shifts rows
-  const shiftRows = ['בוקר','ערב'].map(shift => {
-    const label = shift==='בוקר'
-      ? `<td><div class="row-label"><div class="row-icon eicon-default">${shift==='בוקר'?'☀️':'🌙'}</div><div class="row-text"><span class="row-effort-name">משמרת ${shift}</span></div></div></td>`
-      : `<td><div class="row-label"><div class="row-icon eicon-default">🌙</div><div class="row-text"><span class="row-effort-name">משמרת ${shift}</span></div></div></td>`;
-    const cells = activeDays.map(d => {
-      const di = DAYS.indexOf(d);
-      const p = plans.find(p=>p.day===d&&p.rowType==='shift'&&p.rowName===shift);
-      return `<td>${p?formatBulletsList(p.content):'<span style="color:#ccc">—</span>'}</td>`;
-    }).join('');
-    return `<tr>${label}${cells}</tr>`;
-  }).join('');
+  const rows = units.map(u => {
+    const unitPlans = plans.filter(p => p.unit === u.name);
+    if(isAll && !unitPlans.length) return '';
 
-  // Effort rows
-  const effortRows = efforts.map(eff => {
-    const icon = getEffortIcon(eff.name);
-    const label = `<td>
-      <div class="row-label">
-        <div class="row-icon ${icon.bg}">${icon.emoji}</div>
-        <div class="row-text">
-          <span class="row-effort-name">${esc(eff.name)}</span>
-        </div>
-      </div></td>`;
-    const cells = activeDays.map(d => {
-      const di = DAYS.indexOf(d);
-      const p = plans.find(p=>p.day===d&&p.rowType==='effort'&&p.rowName===eff.name);
-      return `<td>${p?formatBulletsList(p.content):'<span style="color:#ccc">—</span>'}</td>`;
+    const unitHeader = isAll ? `<tr><td colspan="${activeDays.length + 1}" style="background:#2d3d1e!important; color:#c9a227; font-weight:bold; padding:8px 20px; text-align:right;">📍 ${esc(u.name)}</td></tr>` : '';
+
+    // Shifts rows
+    const shiftRows = ['בוקר','ערב'].map(shift => {
+      const label = `<td><div class="row-label"><div class="row-icon eicon-default">${shift==='בוקר'?'☀️':'🌙'}</div><div class="row-text"><span class="row-effort-name">משמרת ${shift}</span></div></div></td>`;
+      const cells = activeDays.map(d => {
+        const p = unitPlans.find(p=>p.day===d&&p.rowType==='shift'&&p.rowName===shift);
+        return `<td>${p?formatBulletsList(p.content):'<span style="color:#ccc">—</span>'}</td>`;
+      }).join('');
+      return `<tr>${label}${cells}</tr>`;
     }).join('');
-    return `<tr>${label}${cells}</tr>`;
+
+    // Effort rows
+    const effortRows = efforts.map(eff => {
+      const icon = getEffortIcon(eff.name);
+      const label = `<td>
+        <div class="row-label">
+          <div class="row-icon ${icon.bg}">${icon.emoji}</div>
+          <div class="row-text">
+            <span class="row-effort-name">${esc(eff.name)}</span>
+          </div>
+        </div></td>`;
+      const cells = activeDays.map(d => {
+        const p = unitPlans.find(p=>p.day===d&&p.rowType==='effort'&&p.rowName===eff.name);
+        return `<td>${p?formatBulletsList(p.content):'<span style="color:#ccc">—</span>'}</td>`;
+      }).join('');
+      return `<tr>${label}${cells}</tr>`;
+    }).join('');
+
+    return unitHeader + shiftRows + effortRows;
   }).join('');
 
   return `<div class="card">
-    <div class="card-header"><span class="icon">📅</span><span class="title">טבלה שבועית — ${esc(currentUnitTab)}</span></div>
+    <div class="card-header"><span class="icon">📅</span><span class="title">טבלה שבועית — ${isAll ? 'כל היחידות' : esc(currentUnitTab)}</span></div>
     <div class="card-body" style="padding:0">
       <div class="table-wrap">
         <table class="week"><thead><tr><th>שדה</th>${thCols}</tr></thead>
-        <tbody>${shiftRows}${effortRows}</tbody></table>
+        <tbody>${rows}</tbody></table>
       </div>
     </div>
   </div>`;
@@ -2510,6 +3046,9 @@ function buildStaffFormDays(){
   const weekLabel = document.getElementById('staff-week-select').value;
   const dates = getWeekDates(weekLabel);
 
+  // Update datalist for current department
+  updateStaffDatalist(staffDept, 'מפקדת הנפה');
+
   const section = document.createElement('div');
   section.className = 'day-section';
   section.innerHTML = `
@@ -2530,11 +3069,17 @@ function buildStaffFormDays(){
             <div class="shift-fields">
               <div class="shift-field">
                 <div class="shift-label boker">☀️ בוקר</div>
-                <textarea class="field-textarea" data-day="${dayName}" data-type="staff-shift" data-name="בוקר" placeholder="משמרת בוקר..." rows="2"></textarea>
+                <div class="staff-inputs-container" data-day="${dayName}" data-type="staff-shift" data-name="בוקר">
+                  <!-- Inputs will be added here -->
+                </div>
+                <button class="add-staff-btn" onclick="addStaffInput(this)">+ הוסף אדם</button>
               </div>
               <div class="shift-field">
                 <div class="shift-label erev">🌙 ערב</div>
-                <textarea class="field-textarea" data-day="${dayName}" data-type="staff-shift" data-name="ערב" placeholder="משמרת ערב..." rows="2"></textarea>
+                <div class="staff-inputs-container" data-day="${dayName}" data-type="staff-shift" data-name="ערב">
+                  <!-- Inputs will be added here -->
+                </div>
+                <button class="add-staff-btn" onclick="addStaffInput(this)">+ הוסף אדם</button>
               </div>
             </div>
           </div>`;
@@ -2542,20 +3087,38 @@ function buildStaffFormDays(){
       </div>
     </div>`;
   container.appendChild(section);
+
+  // Initialize with at least one input per shift
+  container.querySelectorAll('.staff-inputs-container').forEach(cont => {
+    addStaffInput(null, cont);
+  });
 }
 
 async function loadExistingStaffData(){
   const weekLabel = document.getElementById('staff-week-select').value;
   showLoader();
   try{
-    const res = await apiGet({action:'plans',week:weekLabel});
-    const plans = (res.plans||[]).filter(p=>p.unit===staffDept && p.rowType==='staff-shift');
+    const res = await apiGet({action:'data',week:weekLabel});
+    const plans = (res.shifts||[]).filter(p=>p.unit===staffDept && p.rowType==='staff-shift');
 
-    document.querySelectorAll('#staff-form-days .field-textarea').forEach(ta => {
-      const day = ta.dataset.day;
-      const name = ta.dataset.name;
-      const match = plans.find(p=>p.day===day && p.rowName===name);
-      ta.value = match ? match.content : '';
+    plans.forEach(p => {
+      const cont = Array.from(document.querySelectorAll('#staff-form-days .staff-inputs-container')).find(el => 
+        el.dataset.day === p.day && el.dataset.name === p.rowName
+      );
+      if(cont){
+        cont.innerHTML = '';
+        const names = p.content.split(',').map(s=>s.trim()).filter(Boolean);
+        if(names.length === 0) names.push('');
+        names.forEach(name => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'staff-input-wrapper';
+          wrapper.innerHTML = `
+            <input type="text" class="staff-input" list="staff-list" value="${esc(name)}" placeholder="בחר שם..." oninput="updateStaffFilledCount()">
+            <button class="remove-staff-btn" onclick="this.parentElement.remove(); updateStaffFilledCount()">×</button>
+          `;
+          cont.appendChild(wrapper);
+        });
+      }
     });
 
     updateStaffFilledCount();
@@ -2563,16 +3126,15 @@ async function loadExistingStaffData(){
 }
 
 function updateStaffFilledCount(){
-  const fields = document.querySelectorAll('#staff-form-days .field-textarea');
+  const containers = document.querySelectorAll('#staff-form-days .staff-inputs-container');
   let filled = 0;
-  fields.forEach(f => { if(f.value.trim()) filled++; });
+  containers.forEach(cont => {
+    const hasValue = Array.from(cont.querySelectorAll('.staff-input')).some(input => input.value.trim());
+    if(hasValue) filled++;
+  });
   const el = document.querySelector('[data-staff-count="shifts"]');
-  if(el) el.textContent = filled > 0 ? `${filled}/${fields.length}` : '';
+  if(el) el.textContent = filled > 0 ? `${filled}/${containers.length}` : '';
 }
-
-document.getElementById('staff-form-days')?.addEventListener('input', function(e){
-  if(e.target.classList.contains('field-textarea')) updateStaffFilledCount();
-});
 
 async function submitStaffForm(){
   const weekLabel = document.getElementById('staff-week-select').value;
@@ -2584,14 +3146,17 @@ async function submitStaffForm(){
   status.className = 'submit-status';
 
   const rows = [];
-  document.querySelectorAll('#staff-form-days .field-textarea').forEach(ta => {
-    const content = ta.value.trim();
-    if(content){
+  document.querySelectorAll('#staff-form-days .staff-inputs-container').forEach(cont => {
+    const names = Array.from(cont.querySelectorAll('.staff-input'))
+      .map(i => i.value.trim())
+      .filter(Boolean);
+    
+    if(names.length > 0){
       rows.push({
-        day: ta.dataset.day,
-        rowType: ta.dataset.type,
-        rowName: ta.dataset.name,
-        content: content
+        day: cont.dataset.day,
+        rowType: cont.dataset.type,
+        rowName: cont.dataset.name,
+        content: names.join(', ')
       });
     }
   });
@@ -2833,6 +3398,86 @@ async function moveEffort(idx, direction){
       alert('שגיאה: ' + (res.error || 'Unknown error'));
     }
   }finally{ hideLoader(); }
+}
+
+function exportUnitsView() {
+  const isAll = currentUnitTab === 'all';
+  const units = config.units || [];
+  const filteredPlans = isAll 
+    ? currentPlans.filter(p => units.some(u => u.name === p.unit))
+    : currentPlans.filter(p => p.unit === currentUnitTab);
+
+  if (!filteredPlans.length) {
+    showToast('❌ אין נתונים לייצוא');
+    return;
+  }
+
+  const headers = ['יחידה', 'יום', 'סוג', 'שם', 'תוכן', 'סטטוס', 'הערת מעקב'];
+  const rows = filteredPlans.map(p => [
+    p.unit,
+    p.day,
+    p.rowType === 'effort' ? 'מאמץ' : p.rowType === 'shift' ? 'משמרת' : p.rowType,
+    p.rowName,
+    p.content.replace(/\n/g, ' | '),
+    p.status || '',
+    p.followupNote || ''
+  ]);
+
+  let csvContent = "\uFEFF"; // BOM for Hebrew support
+  csvContent += headers.join(",") + "\n";
+  rows.forEach(row => {
+    const escapedRow = row.map(val => `"${String(val).replace(/"/g, '""')}"`);
+    csvContent += escapedRow.join(",") + "\n";
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  const fileName = isAll ? `iklar_all_units_${currentWeek}.csv` : `iklar_${currentUnitTab}_${currentWeek}.csv`;
+  link.setAttribute("download", fileName);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast('✅ הייצוא הושלם');
+}
+
+function exportToCSV() {
+  if (!currentPlans || !currentPlans.length) {
+    showToast('❌ אין נתונים לייצוא');
+    return;
+  }
+
+  const headers = ['שבוע', 'יחידה', 'יום', 'סוג', 'שם', 'תוכן', 'סטטוס', 'הערת מעקב'];
+  const rows = currentPlans.map(p => [
+    p.week,
+    p.unit,
+    p.day,
+    p.rowType === 'effort' ? 'מאמץ' : p.rowType === 'shift' ? 'משמרת' : p.rowType,
+    p.rowName,
+    p.content.replace(/\n/g, ' | '),
+    p.status || '',
+    p.followupNote || ''
+  ]);
+
+  let csvContent = "\uFEFF"; // BOM for Hebrew support in Excel
+  csvContent += headers.join(",") + "\n";
+  rows.forEach(row => {
+    const escapedRow = row.map(val => `"${String(val).replace(/"/g, '""')}"`);
+    csvContent += escapedRow.join(",") + "\n";
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", `iklar_export_${currentWeek}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast('✅ הקובץ יוצא בהצלחה');
 }
 
 // ─── Start ─────────────────────────────────────────────────
