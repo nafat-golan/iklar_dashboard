@@ -1721,22 +1721,7 @@ function addStaffInput(btn, containerOverride) {
 
 function updateStaffDatalist(unit, branchFilter) {
   const staff = config.staff || [];
-  const debugEl = document.getElementById('staff-debug-status');
-  
   let filtered = staff.filter(p => p.unit === unit);
-  
-  if (debugEl) {
-    debugEl.style.display = 'block';
-    let msg = `🔍 מחפש: מכלול "${unit}"`;
-    if (branchFilter) msg += ` + ענף "${branchFilter}"`;
-    msg += ` | נמצאו: ${filtered.length} אנשים`;
-    
-    if (filtered.length === 0 && staff.length > 0) {
-      msg += `<br>⚠️ אי-התאמה! דוגמה למכלול בנתונים: "${staff[0].unit}"`;
-    }
-    debugEl.innerHTML = msg;
-  }
-
   if (branchFilter) {
     filtered = filtered.filter(p => p.branch === branchFilter);
   }
@@ -3112,7 +3097,6 @@ function buildStaffFormDays(){
   const section = document.createElement('div');
   section.className = 'day-section';
   section.innerHTML = `
-    <div id="staff-debug-status" style="background:#fff3cd; color:#856404; padding:8px; font-size:12px; border-radius:4px; margin-bottom:10px; display:none; border:1px solid #ffeeba"></div>
     <div class="day-header open" onclick="toggleDay(this)">
       <div class="day-title"><span>👥 משמרות ${esc(staffDept)}</span></div>
       <div style="display:flex;align-items:center;gap:10px">
