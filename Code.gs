@@ -5,7 +5,8 @@
 // Deploy as: Web app → Execute as: Me → Access: Anyone
 // ============================================================
 
-const PLANS_SHEET = 'plans';
+const SHIFTS_SHEET = 'shifts';
+const EFFORTS_SHEET = 'efforts';
 const CONFIG_SHEET = 'config';
 
 // ─── Read secret from config sheet (after 3rd --- separator) ───
@@ -39,8 +40,8 @@ function doGet(e) {
       case 'weeks':
         result = getWeeks();
         break;
-      case 'plans':
-        result = getPlans(e.parameter.week || '');
+      case 'data':
+        result = getData(e.parameter.week || '');
         break;
       case 'validate':
         result = validateKey(e.parameter.key || '');
@@ -72,7 +73,7 @@ function doPost(e) {
 
     switch (action) {
       case 'submit':
-        result = submitPlan(body);
+        result = submitData(body);
         break;
       case 'followup':
         result = submitFollowup(body);
@@ -203,29 +204,31 @@ function validateDeptKey(key) {
 // ─── Get Available Weeks ───────────────────────────────────
 function getWeeks() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const ws = ss.getSheetByName(PLANS_SHEET);
-  if (!ws || ws.getLastRow() < 2) return { weeks: [] };
-
-  const data = ws.getDataRange().getValues();
-
-  // Build set of department names
+  const shiftsWs = ss.getSheetByName(SHIFTS_SHEET);
+  const effortsWs = ss.getSheetByName(EFFORTS_SHEET);
+  
+  const weekMap = {};
   const cfgData = getConfig();
   const deptNames = new Set((cfgData.departments || []).map(d => d.name));
 
-  const weekMap = {};
-
-  for (let i = 1; i < data.length; i++) {
-    const week = String(data[i][0] || '').trim();
-    const unit = String(data[i][1] || '').trim();
-    if (!week || !unit) continue;
-
-    if (!weekMap[week]) weekMap[week] = { units: new Set(), depts: new Set() };
-    if (deptNames.has(unit)) {
-      weekMap[week].depts.add(unit);
-    } else {
-      weekMap[week].units.add(unit);
+  const processSheet = (ws) => {
+    if (!ws || ws.getLastRow() < 2) return;
+    const data = ws.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      const week = String(data[i][0] || '').trim();
+      const unit = String(data[i][1] || '').trim();
+      if (!week || !unit) continue;
+      if (!weekMap[week]) weekMap[week] = { units: new Set(), depts: new Set() };
+      if (deptNames.has(unit)) {
+        weekMap[week].depts.add(unit);
+      } else {
+        weekMap[week].units.add(unit);
+      }
     }
-  }
+  };
+
+  processSheet(shiftsWs);
+  processSheet(effortsWs);
 
   const weeks = Object.keys(weekMap).map(w => ({
     label: w,
@@ -256,41 +259,46 @@ function parseDateLabel(label) {
   return 0;
 }
 
-// ─── Get Plans for a Week ──────────────────────────────────
-function getPlans(week) {
+// ─── Get Shifts and Efforts for a Week ────────────────────────
+function getData(week) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const ws = ss.getSheetByName(PLANS_SHEET);
-  if (!ws || ws.getLastRow() < 2) return { plans: [] };
+  const shiftsWs = ss.getSheetByName(SHIFTS_SHEET);
+  const effortsWs = ss.getSheetByName(EFFORTS_SHEET);
+  
+  const shifts = [];
+  const efforts = [];
 
-  const data = ws.getDataRange().getValues();
-  const plans = [];
+  const readSheet = (ws, targetArr) => {
+    if (!ws || ws.getLastRow() < 2) return;
+    const data = ws.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      const w = String(data[i][0] || '').trim();
+      if (week && w !== week) continue;
+      targetArr.push({
+        week: w,
+        unit: String(data[i][1] || '').trim(),
+        day: String(data[i][2] || '').trim(),
+        rowType: String(data[i][3] || '').trim(),
+        rowName: String(data[i][4] || '').trim(),
+        content: String(data[i][5] || '').trim(),
+        timestamp: String(data[i][6] || '').trim(),
+        status: String(data[i][7] || '').trim(),
+        followupNote: String(data[i][8] || '').trim(),
+        followupTs: String(data[i][9] || '').trim()
+      });
+    }
+  };
 
-  for (let i = 1; i < data.length; i++) {
-    const w = String(data[i][0] || '').trim();
-    if (week && w !== week) continue;
+  readSheet(shiftsWs, shifts);
+  readSheet(effortsWs, efforts);
 
-    plans.push({
-      week: w,
-      unit: String(data[i][1] || '').trim(),
-      day: String(data[i][2] || '').trim(),
-      rowType: String(data[i][3] || '').trim(),
-      rowName: String(data[i][4] || '').trim(),
-      content: String(data[i][5] || '').trim(),
-      timestamp: String(data[i][6] || '').trim(),
-      status: String(data[i][7] || '').trim(),
-      followupNote: String(data[i][8] || '').trim(),
-      followupTs: String(data[i][9] || '').trim()
-    });
-  }
-
-  return { plans };
+  return { shifts, efforts };
 }
 
-// ─── Submit Plan ───────────────────────────────────────────
-function submitPlan(body) {
+// ─── Submit Data ───────────────────────────────────────────
+function submitData(body) {
   const { key, week, data: rows } = body;
 
-  // Validate key — try unit first, then department
   let validation = validateKey(key);
   let unit;
   if (validation.valid) {
@@ -308,41 +316,45 @@ function submitPlan(body) {
   }
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let ws = ss.getSheetByName(PLANS_SHEET);
+  
+  const shiftsRows = rows.filter(r => r.rowType === 'shift' || r.rowType === 'staff-shift');
+  const effortsRows = rows.filter(r => r.rowType === 'effort');
 
-  // Create sheet if missing
-  if (!ws) {
-    ws = ss.insertSheet(PLANS_SHEET);
-    ws.appendRow(['week', 'unit', 'day', 'row_type', 'row_name', 'content', 'timestamp']);
-  }
-
-  // Delete existing rows for this unit+week
-  const allData = ws.getDataRange().getValues();
-  const rowsToDelete = [];
-  for (let i = allData.length - 1; i >= 1; i--) {
-    if (String(allData[i][0]).trim() === week && String(allData[i][1]).trim() === unit) {
-      rowsToDelete.push(i + 1); // 1-indexed
+  const saveToSheet = (sheetName, rowsToSave) => {
+    let ws = ss.getSheetByName(sheetName);
+    if (!ws) {
+      ws = ss.insertSheet(sheetName);
+      ws.appendRow(['week', 'unit', 'day', 'row_type', 'row_name', 'content', 'timestamp', 'status', 'followup_note', 'followup_ts']);
     }
-  }
-  // Delete in reverse order to preserve indices
-  for (const r of rowsToDelete) {
-    ws.deleteRow(r);
-  }
 
-  // Append new rows
-  const timestamp = new Date().toISOString();
-  const newRows = [];
-  for (const row of rows) {
-    if (row.content && row.content.trim()) {
-      newRows.push([week, unit, row.day, row.rowType, row.rowName, row.content.trim(), timestamp, '', '', '']);
+    // Delete existing
+    const allData = ws.getDataRange().getValues();
+    const rowsToDelete = [];
+    for (let i = allData.length - 1; i >= 1; i--) {
+      if (String(allData[i][0]).trim() === week && String(allData[i][1]).trim() === unit) {
+        rowsToDelete.push(i + 1);
+      }
     }
-  }
+    for (const r of rowsToDelete) ws.deleteRow(r);
 
-  if (newRows.length > 0) {
-    ws.getRange(ws.getLastRow() + 1, 1, newRows.length, 10).setValues(newRows);
-  }
+    // Append new
+    const timestamp = new Date().toISOString();
+    const newRows = [];
+    for (const row of rowsToSave) {
+      if (row.content && row.content.trim()) {
+        newRows.push([week, unit, row.day, row.rowType, row.rowName, row.content.trim(), timestamp, '', '', '']);
+      }
+    }
+    if (newRows.length > 0) {
+      ws.getRange(ws.getLastRow() + 1, 1, newRows.length, 10).setValues(newRows);
+    }
+    return newRows.length;
+  };
 
-  return { success: true, unit, week, rowCount: newRows.length };
+  const shiftsCount = saveToSheet(SHIFTS_SHEET, shiftsRows);
+  const effortsCount = saveToSheet(EFFORTS_SHEET, effortsRows);
+
+  return { success: true, unit, week, shiftsCount, effortsCount };
 }
 
 // ─── Submit Followup ───────────────────────────────────────
@@ -360,27 +372,32 @@ function submitFollowup(body) {
   }
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const ws = ss.getSheetByName(PLANS_SHEET);
-  if (!ws) return { error: 'Missing plans sheet' };
-
-  const allData = ws.getDataRange().getValues();
+  const shiftsWs = ss.getSheetByName(SHIFTS_SHEET);
+  const effortsWs = ss.getSheetByName(EFFORTS_SHEET);
+  
   const followupTs = new Date().toISOString();
   let updated = 0;
 
-  for (const item of items) {
-    for (let i = 1; i < allData.length; i++) {
-      if (String(allData[i][0]).trim() === week &&
-          String(allData[i][1]).trim() === unit &&
-          String(allData[i][2]).trim() === item.day &&
-          String(allData[i][3]).trim() === item.rowType &&
-          String(allData[i][4]).trim() === item.rowName) {
-        // Write followup columns directly — H, I, J (columns 8, 9, 10)
-        ws.getRange(i + 1, 8, 1, 3).setValues([[item.status || '', item.note || '', followupTs]]);
-        updated++;
-        break;
+  const updateInSheet = (ws) => {
+    if (!ws) return;
+    const allData = ws.getDataRange().getValues();
+    for (const item of items) {
+      for (let i = 1; i < allData.length; i++) {
+        if (String(allData[i][0]).trim() === week &&
+            String(allData[i][1]).trim() === unit &&
+            String(allData[i][2]).trim() === item.day &&
+            String(allData[i][3]).trim() === item.rowType &&
+            String(allData[i][4]).trim() === item.rowName) {
+          ws.getRange(i + 1, 8, 1, 3).setValues([[item.status || '', item.note || '', followupTs]]);
+          updated++;
+          break;
+        }
       }
     }
-  }
+  };
+
+  updateInSheet(shiftsWs);
+  updateInSheet(effortsWs);
 
   SpreadsheetApp.flush();
   return { success: true, unit, week, updated };
@@ -460,14 +477,14 @@ function updateEffort(body) {
 
   if (!found) return { error: 'Effort not found: ' + oldName };
 
-  // If name changed, update all matching rows in plans sheet
+  // If name changed, update all matching rows in efforts sheet
   if (oldName !== newName) {
-    const plansWs = ss.getSheetByName(PLANS_SHEET);
-    if (plansWs && plansWs.getLastRow() >= 2) {
-      const plansData = plansWs.getDataRange().getValues();
-      for (let i = 1; i < plansData.length; i++) {
-        if (String(plansData[i][4]).trim() === oldName) {
-          plansWs.getRange(i + 1, 5).setValue(newName);
+    const effortsWs = ss.getSheetByName(EFFORTS_SHEET);
+    if (effortsWs && effortsWs.getLastRow() >= 2) {
+      const effortsData = effortsWs.getDataRange().getValues();
+      for (let i = 1; i < effortsData.length; i++) {
+        if (String(effortsData[i][4]).trim() === oldName) {
+          effortsWs.getRange(i + 1, 5).setValue(newName);
         }
       }
     }
@@ -611,13 +628,21 @@ function setupSheets() {
   cfg.appendRow(['gate_code', 'iklar2026', '']);
   cfg.appendRow(['admin_password', 'admin2026', '']);
 
-  // Plans sheet
-  let plans = ss.getSheetByName(PLANS_SHEET);
-  if (!plans) {
-    plans = ss.insertSheet(PLANS_SHEET);
+  // Shifts sheet
+  let shifts = ss.getSheetByName(SHIFTS_SHEET);
+  if (!shifts) {
+    shifts = ss.insertSheet(SHIFTS_SHEET);
   }
-  plans.clear();
-  plans.appendRow(['week', 'unit', 'day', 'row_type', 'row_name', 'content', 'timestamp', 'status', 'followup_note', 'followup_ts']);
+  shifts.clear();
+  shifts.appendRow(['week', 'unit', 'day', 'row_type', 'row_name', 'content', 'timestamp', 'status', 'followup_note', 'followup_ts']);
+
+  // Efforts sheet
+  let efforts = ss.getSheetByName(EFFORTS_SHEET);
+  if (!efforts) {
+    efforts = ss.insertSheet(EFFORTS_SHEET);
+  }
+  efforts.clear();
+  efforts.appendRow(['week', 'unit', 'day', 'row_type', 'row_name', 'content', 'timestamp', 'status', 'followup_note', 'followup_ts']);
 
   SpreadsheetApp.flush();
   Logger.log('Setup complete!');
