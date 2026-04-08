@@ -1721,20 +1721,24 @@ function addStaffInput(btn, containerOverride) {
 
 function updateStaffDatalist(unit, branchFilter) {
   const staff = config.staff || [];
-  console.log('[DEBUG] updateStaffDatalist called for Unit:', `"${unit}"`, 'Branch Filter:', `"${branchFilter || 'None'}"`);
-  console.log('[DEBUG] Total staff in memory:', staff.length);
-
+  const debugEl = document.getElementById('staff-debug-status');
+  
   let filtered = staff.filter(p => p.unit === unit);
-  console.log(`[DEBUG] Found ${filtered.length} staff members matching Unit: "${unit}"`);
-
-  if (branchFilter) {
-    const beforeBranch = filtered.length;
-    filtered = filtered.filter(p => p.branch === branchFilter);
-    console.log(`[DEBUG] After Branch Filter ("${branchFilter}"), ${filtered.length} members remain (Removed ${beforeBranch - filtered.length})`);
+  
+  if (debugEl) {
+    debugEl.style.display = 'block';
+    let msg = `🔍 מחפש: מכלול "${unit}"`;
+    if (branchFilter) msg += ` + ענף "${branchFilter}"`;
+    msg += ` | נמצאו: ${filtered.length} אנשים`;
+    
+    if (filtered.length === 0 && staff.length > 0) {
+      msg += `<br>⚠️ אי-התאמה! דוגמה למכלול בנתונים: "${staff[0].unit}"`;
+    }
+    debugEl.innerHTML = msg;
   }
 
-  if (filtered.length === 0 && staff.length > 0) {
-    console.warn('[DEBUG] FILTER MISMATCH! Sample staff unit from data:', `"${staff[0].unit}"`, 'Sample staff branch:', `"${staff[0].branch}"`);
+  if (branchFilter) {
+    filtered = filtered.filter(p => p.branch === branchFilter);
   }
 
   let datalist = document.getElementById('staff-list');
@@ -3108,6 +3112,7 @@ function buildStaffFormDays(){
   const section = document.createElement('div');
   section.className = 'day-section';
   section.innerHTML = `
+    <div id="staff-debug-status" style="background:#fff3cd; color:#856404; padding:8px; font-size:12px; border-radius:4px; margin-bottom:10px; display:none; border:1px solid #ffeeba"></div>
     <div class="day-header open" onclick="toggleDay(this)">
       <div class="day-title"><span>👥 משמרות ${esc(staffDept)}</span></div>
       <div style="display:flex;align-items:center;gap:10px">
